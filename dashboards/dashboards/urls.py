@@ -1,16 +1,12 @@
-from rest.urls import path
-from cache import cache_page
+from django.urls import re_path
 from .views.example import ExampleView
 from .views.hello import HelloView
-
-
-# Use cache_page decorator for caching view
-
-# urlpatterns = [
-#     path('example/', cache_page(60 * 15)(ExampleView.as_view())),
-# ]
+from .views.timelines import TimelinesView
+from .views.interesting_fields import InterestingFieldsView
 
 urlpatterns = [
-    path('example/', ExampleView.as_view()),
-    path('hello/', HelloView.as_view())
+    re_path('example/', ExampleView.as_view()),
+    re_path('hello/', HelloView.as_view()),
+    re_path(r'^gettimelines/?$', TimelinesView.as_view()),
+    re_path(r'^getinterestingfields/?$', InterestingFieldsView.as_view())
 ]
