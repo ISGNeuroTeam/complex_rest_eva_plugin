@@ -1,9 +1,16 @@
 [logging]
+separate_logs = DEBUG
+common_logs = ERROR
+
+[logger1]
+type = JSON
 level = INFO
+rotation = true
+flatten = true
 
 [db_conf]
 host = localhost
 port = 5432
-database = complex_rest_eva_plugin
-user = complex_rest_eva_plugin
-password = complex_rest_eva_plugin
+database = dashboards
+user = dashboards
+password = dashboards

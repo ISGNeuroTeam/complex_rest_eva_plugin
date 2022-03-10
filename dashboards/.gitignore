@@ -105,8 +105,8 @@ GitHub.sublime-settings
 
 start.sh
 stop.sh
-complex_rest_eva_plugin-*.tar.gz
-complex_rest_eva_plugin.conf
+dashboards-*.tar.gz
+dashboards.conf
 venv.tar.gz
 
 nginx/

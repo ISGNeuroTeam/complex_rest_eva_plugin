@@ -18,7 +18,7 @@ default_ini_config = {
 
 config_parser = configparser.ConfigParser()
 
-config_parser.read(Path(__file__).parent / 'complex_rest_eva_plugin.conf')
+config_parser.read(Path(__file__).parent / 'dashboards.conf')
 
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 
