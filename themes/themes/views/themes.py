@@ -1,14 +1,22 @@
 import json
+import uuid
 
 from rest.views import APIView
 from rest.response import Response, ErrorResponse, SuccessResponse, status
 from rest.permissions import IsAuthenticated
+import super_logger
 
-db =
+# needed for db connection
+from django.conf import settings
+from complex_rest.plugins.db_connector.utils.db_connector import PostgresConnector
+
 
 
 class ThemeListView(APIView):
     permission_classes = (IsAuthenticated,)
+    http_method_names = ['get']
+    logger = super_logger.getLogger('themes')
+    db = PostgresConnector(settings.DB_POOL)
 
     def get(self, request):
 
@@ -23,9 +31,12 @@ class ThemeListView(APIView):
             _limit = 100
 
         try:
-            themes_list = db.get_themes_data(limit=_limit, offset=_offset)
+            themes_list = self.db.get_themes_data(limit=_limit, offset=_offset)
         except Exception as err:
-            return ErrorResponse(error_message=str(err))
+            return Response(
+                json.dumps({'status': 'failed', 'error': f'{err}'}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
 
         self.logger.debug(f'ThemeListView RESPONSE: {themes_list}')
         return \
@@ -35,6 +46,9 @@ class ThemeListView(APIView):
 
 class ThemeGetView(APIView):
     permission_classes = (IsAuthenticated, )
+    http_method_names = ['get']
+    logger = super_logger.getLogger('themes')
+    db = PostgresConnector(settings.DB_POOL)
 
     def get(self, request):
 
@@ -49,19 +63,25 @@ class ThemeGetView(APIView):
         self.logger.debug(f'ThemeGetView Request theme name: {theme_name}')
 
         try:
-            theme = db.get_theme(theme_name=theme_name)
+            theme = self.db.get_theme(theme_name=theme_name)
         except Exception as err:
-            return ErrorResponse(error_message=str(err))
+            return Response(
+                json.dumps({'status': 'failed', 'error': f'{err}'}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
 
         self.logger.debug(f'ThemeGetHandler RESPONSE: {theme}')
 
         return \
             SuccessResponse(
-                data=theme
+                json.dumps(theme)
             )
 
-class ThemeView(APIView):
+class ThemeCreateView(APIView):
     permission_classes = (IsAuthenticated,)
+    http_method_names = ['post']
+    logger = super_logger.getLogger('themes')
+    db = PostgresConnector(settings.DB_POOL)
 
     def post(self, request):
         try:
@@ -75,17 +95,27 @@ class ThemeView(APIView):
         # 1. create theme in DB
         try:
             self.logger.debug(f'ThemeHandler create theme, name: {theme_name} with body: {json.dumps(self.data)}')
-            theme = db.add_theme(theme_name=theme_name,
+            theme = self.db.add_theme(theme_name=theme_name,
                                       content=json.dumps(request.data))
 
         except Exception as err:
-            return ErrorResponse(error_message=str(err))
+            return Response(
+                json.dumps({'status': 'failed', 'error': f'{err}'}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
 
         # 2. return saved theme
         return \
             SuccessResponse(
-                data=theme
+                json.dumps(theme)
             )
+
+
+class ThemeDeleteView(APIView):
+    permission_classes = (IsAuthenticated,)
+    http_method_names = ['delete']
+    logger = super_logger.getLogger('themes')
+    db = PostgresConnector(settings.DB_POOL)
 
     def delete(self, request):
         try:
@@ -98,19 +128,25 @@ class ThemeView(APIView):
 
         # 1. check if theme exists
         try:
-            theme = db.get_theme(theme_name=theme_name)
+            theme = self.db.get_theme(theme_name=theme_name)
         except Exception as err:
-            return ErrorResponse(error_message=str(err))
+            return Response(
+                json.dumps({'status': 'failed', 'error': f'{err}'}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
 
         # 2. delete theme
         try:
-            deleted_theme_name = db.delete_theme(theme_name=theme_name)
+            deleted_theme_name = self.db.delete_theme(theme_name=theme_name)
             self.logger.debug(f'ThemeHandler Deleted theme name: {deleted_theme_name} with body: {theme}')
         except Exception as err:
-            return ErrorResponse(error_message=str(err))
+            return Response(
+                json.dumps({'status': 'failed', 'error': f'{err}'}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
 
         # 3. return deleted theme
         return \
             SuccessResponse(
-                data=theme
+                json.dumps(theme)
             )
