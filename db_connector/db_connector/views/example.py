@@ -6,7 +6,9 @@ from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated, AllowAny
 
-from complex_rest_eva_plugin.settings import ini_config
+# from complex_rest_eva_plugin.settings import ini_config
+from complex_rest_eva_plugin.db_connector.db_connector.settings import ini_config
+
 
 # you can use default logger for plugin
 log = logging.getLogger('complex_rest_eva_plugin')
