@@ -1,6 +1,6 @@
 import configparser
 from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults
+from core.settings.ini_config import merge_ini_config_with_defaults, merge_dicts
 
 default_ini_config = {
     'logging': {
@@ -17,7 +17,7 @@ default_ini_config = {
 
 config_parser = configparser.ConfigParser()
 
-config_parser.read(Path(__file__).parent / 'dashboards.conf')
+config_parser.read(Path(__file__).parent / 'db_connector.conf')
 
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 
