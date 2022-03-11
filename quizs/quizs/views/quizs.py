@@ -1,16 +1,14 @@
 from rest.views import APIView
 from rest.response import Response, status
-from rest.permissions import IsAuthenticated
+from rest.permissions import IsAuthenticated, AllowAny
 import uuid
 import super_logger
-from complex_rest_eva_plugin.db_connector.db_connector.utils.db_connector import PostgresConnector
 # from django.conf import settings
-from ..settings import DB_POOL
 import json
-import jwt
 
-
-SECRET_KEY = '8b62abb2-bbf6-4e0e-a7c1-2e4734bebbd9'
+from complex_rest_eva_plugin.db_connector.db_connector.utils.db_connector import PostgresConnector
+from ..utils.get_user import get_current_user
+from ..settings import DB_POOL
 
 
 class QuizsHandlerView(APIView):
@@ -19,6 +17,7 @@ class QuizsHandlerView(APIView):
     """
 
     permission_classes = (IsAuthenticated,)
+    # permission_classes = (AllowAny,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -43,6 +42,7 @@ class QuizHandlerView(APIView):
     """
 
     permission_classes = (IsAuthenticated,)
+    # permission_classes = (AllowAny,)
     http_method_names = ['get', 'post', 'put', 'delete']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -118,27 +118,7 @@ class QuizHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
 
-def decode_token(token):
-    return jwt.decode(token, SECRET_KEY, algorithms='HS256')
-
-
-def _get_current_user(request):
-    # TODO: need check
-    client_token = request.COOKIES.get('eva_token')
-    current_user = None
-    if client_token:
-        try:
-            token_data = decode_token(client_token)
-            user_id = token_data['user_id']
-            # permissions = self.db.get_permissions_data(user_id=user_id, names_only=True)
-        except (jwt.ExpiredSignatureError, jwt.DecodeError):
-            pass
-        else:
-            current_user = user_id
-    return current_user
-
-
-class QuizFilledHandler(APIView):
+class QuizFilledHandlerView(APIView):
     """
     Handling actions with filled quiz object.
     It's allows two actions:
@@ -146,7 +126,8 @@ class QuizFilledHandler(APIView):
     - post:     adds new fille quiz object to DB with data from json body;
     """
 
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     http_method_names = ['get', 'post']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -173,7 +154,8 @@ class QuizFilledHandler(APIView):
 
     def post(self, request):
         filled_ids = list()
-        for quiz in request:
+        data = json.loads(request.body) if request.body else dict()
+        for quiz in data:  # !!! CHECK !!!
             quiz_type_id = request.GET.get('id', None)
             questions = request.GET.get('questions', None)
 
@@ -183,7 +165,7 @@ class QuizFilledHandler(APIView):
                     status.HTTP_400_BAD_REQUEST
                 )
             try:
-                current_user = _get_current_user(request)
+                current_user = get_current_user(request)
                 if not current_user:
                     return Response(
                         json.dumps({'status': 'failed', 'error': "unauthorized"}, default=str),
