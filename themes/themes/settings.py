@@ -12,7 +12,7 @@ default_ini_config = {
     },
     'db_conf': {
         'host': 'localhost',
-        'port': '5432',
+        'port': '5433',
         'database':  'complex_rest_eva_plugin',
         'user': 'complex_rest_eva_plugin',
         'password': 'complex_rest_eva_plugin'

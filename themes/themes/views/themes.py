@@ -7,8 +7,8 @@ from rest.permissions import IsAuthenticated
 import super_logger
 
 # needed for db connection
-from django.conf import settings
-from complex_rest.plugins.db_connector.utils.db_connector import PostgresConnector
+from themes.settings import DB_POOL
+from db_connector.utils.db_connector import PostgresConnector
 
 
 
@@ -16,7 +16,7 @@ class ThemeListView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     logger = super_logger.getLogger('themes')
-    db = PostgresConnector(settings.DB_POOL)
+    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
 
@@ -48,7 +48,7 @@ class ThemeGetView(APIView):
     permission_classes = (IsAuthenticated, )
     http_method_names = ['get']
     logger = super_logger.getLogger('themes')
-    db = PostgresConnector(settings.DB_POOL)
+    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
 
@@ -81,7 +81,7 @@ class ThemeCreateView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post']
     logger = super_logger.getLogger('themes')
-    db = PostgresConnector(settings.DB_POOL)
+    db = PostgresConnector(DB_POOL)
 
     def post(self, request):
         try:
@@ -115,7 +115,7 @@ class ThemeDeleteView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['delete']
     logger = super_logger.getLogger('themes')
-    db = PostgresConnector(settings.DB_POOL)
+    db = PostgresConnector(DB_POOL)
 
     def delete(self, request):
         try:
