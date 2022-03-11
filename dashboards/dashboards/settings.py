@@ -28,7 +28,7 @@ db_conf = dict(ot_simple_rest_conf['db_conf_eva'])
 mem_conf = dict(ot_simple_rest_conf['mem_conf'])
 disp_conf = dict(ot_simple_rest_conf['dispatcher'])
 resolver_conf = dict(ot_simple_rest_conf['resolver'])
-static_conf = dict(ot_simple_rest_conf['static'])
+STATIC_CONF = dict(ot_simple_rest_conf['static'])
 user_conf = dict(ot_simple_rest_conf['user'])
 pool_conf = dict(ot_simple_rest_conf['db_pool_conf'])
 

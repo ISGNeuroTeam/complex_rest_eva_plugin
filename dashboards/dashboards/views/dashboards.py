@@ -26,6 +26,6 @@ class DashboardsView(APIView):
             kwargs['names_only'] = names_only
         dashs = self.db.get_dashs_data(**kwargs)
         return Response(
-            {'data': dashs},
+            json.dumps({'data': dashs}),
             status.HTTP_200_OK
         )
