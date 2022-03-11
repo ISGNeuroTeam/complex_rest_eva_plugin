@@ -7,8 +7,8 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from complex_rest.plugins.db_connector.utils.db_connector import PostgresConnector
-from django.conf import settings
+from plugins.db_connector.connector_singleton import db
+from ..settings import STATIC_CONF
 from ..utils.helper_functions import make_unique_name
 
 
@@ -22,8 +22,7 @@ class DashboardExportView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    db = PostgresConnector(settings.DB_POOL)
-    static_conf = settings.STATIC_CONF
+    static_conf = STATIC_CONF
     static_dir_name = 'storage'
 
     def get(self, request):
@@ -45,7 +44,7 @@ class DashboardExportView(APIView):
 
             for did in dash_ids:
                 try:
-                    dash_data = self.db.get_dash_data(dash_id=did)
+                    dash_data = db.get_dash_data(dash_id=did)
                     if not dash_data:
                         return Response(f'No dash with id={did}', status.HTTP_404_NOT_FOUND)
                 except Exception as err:
