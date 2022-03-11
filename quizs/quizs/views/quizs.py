@@ -1,15 +1,18 @@
-from rest.views import APIView
-from rest.response import Response, status
 from rest.permissions import IsAuthenticated, AllowAny
-import uuid
+from rest.response import Response, status
+from rest.views import APIView
+from datetime import datetime
 import super_logger
-import requests
-# from django.conf import settings
+import tempfile
+import tarfile
+import uuid
 import json
+import os
+import io
 
 from plugins.db_connector.connector_singleton import db
 from ..utils.get_user import get_current_user
-from ..settings import DB_POOL
+from ..settings import STATIC_CONF
 
 
 def print_request(request):
@@ -194,7 +197,7 @@ class QuizFilledHandlerView(APIView):
                     status.HTTP_400_BAD_REQUEST
                 )
             try:
-                # TODO: need check with authorised user
+                # TODO: need check with authorised user; need `eva_token` in cookies
                 current_user = get_current_user(request)
                 if not current_user:
                     return Response(
@@ -240,8 +243,10 @@ class QuizQuestionsHandlerView(APIView):
                 json.dumps({'status': 'failed', 'error': "params 'ids' is needed"}, default=str),
                 status.HTTP_400_BAD_REQUEST
             )
+
         quiz_ids = quiz_ids.split(',')
         quiz_ids = [int(i) for i in quiz_ids if i]
+
         try:
             questions = db.get_quiz_questions(quiz_ids=quiz_ids)
         except Exception as err:
@@ -252,6 +257,125 @@ class QuizQuestionsHandlerView(APIView):
 
         content = {'data': questions}
         return Response(content, status.HTTP_200_OK)
+
+
+class QuizExportJsonHandlerView(APIView):
+    """
+    There is method for export one or more quiz object in '.json' format files.
+    Json files returns in 'tar.gz' package with uuid-name.
+    """
+
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
+    http_method_names = ['get']
+    handler_id = str(uuid.uuid4())
+    logger = super_logger.getLogger('quizs')
+
+    def get(self, request):
+
+        quiz_ids = request.GET.get('ids', None)
+
+        if not quiz_ids:
+            return Response(
+                json.dumps({'status': 'failed', 'error': "param 'ids' is needed"}, default=str),
+                status.HTTP_400_BAD_REQUEST
+            )
+
+        quiz_ids = quiz_ids.split(',')
+        quiz_ids = [int(_) for _ in quiz_ids]
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            archive_name = f"{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}.eva.quiz"
+            _dirname = str(uuid.uuid4())
+            _base_path = os.path.join(STATIC_CONF['static_path'], 'storage', _dirname)
+            if not os.path.exists(_base_path):
+                os.makedirs(_base_path)
+
+            archive_path = os.path.join(_base_path, archive_name)
+            archive = tarfile.open(archive_path, mode='x:gz')
+
+            for qid in quiz_ids:
+                try:
+                    quiz_data = db.get_quiz(quiz_id=qid)
+                    if not quiz_data:
+                        return Response(
+                            json.dumps({'status': 'failed', 'error': f'No quiz with id={qid}'}, default=str),
+                            status.HTTP_404_NOT_FOUND
+                        )
+
+                except Exception as err:
+                    return Response(
+                        json.dumps({'status': 'failed', 'error': str(err)}, default=str),
+                        status.HTTP_409_CONFLICT
+                    )
+
+                filename = f'{qid}.json'
+                filepath = os.path.join(tmp_dir, filename)
+
+                if not os.path.exists(filepath):
+                    with open(filepath, 'w+') as f:
+                        f.write(json.dumps(quiz_data, ensure_ascii=False))
+
+                archive.add(filepath, filename)
+            archive.close()
+
+        content = f'/storage/{_dirname}/{archive_name}'
+        return Response(content, status.HTTP_200_OK)
+
+
+class QuizImportJsonHandlerView(APIView):
+    """
+    That handler allows to import quizs, exported with QuizExportJsonHandler.
+    Or you can put your own 'tar.gz' file with inner quizs json files.
+    """
+
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
+    http_method_names = ['post']
+    handler_id = str(uuid.uuid4())
+    logger = super_logger.getLogger('quizs')
+
+    def post(self, request):
+
+        body = request.body
+        args = {}
+        files = {}
+
+        # TODO: how parse_body_argument content in django?
+        tornado.httputil.parse_body_arguments(request.headers['Content-Type'], body, args, files)
+        print(body, args, files)
+
+        if not files or not files.get('file'):
+            content = {{'status': 'no file in payload'}}
+            return Response(content, status.HTTP_204_NO_CONTENT)
+
+        tar_file = files['file'][0]
+
+        # wraps bytes to work with it like with file
+        file_like_object = io.BytesIO(tar_file['body'])
+        with tarfile.open(mode='r:gz', fileobj=file_like_object) as tar:
+            for quiz in tar.getmembers():
+                quiz_data = tar.extractfile(quiz)
+                quiz_data = json.loads(quiz_data.read())
+                quiz_name = quiz_data.get('name', None)
+                questions = quiz_data.get('questions', None)
+                if None in [quiz_name, questions]:
+                    return Response(
+                        json.dumps({'status': 'failed', 'error': "params 'name' and 'questions' is needed"},
+                                   default=str),
+                        status.HTTP_400_BAD_REQUEST
+                    )
+                try:
+                    db.add_quiz(name=quiz_name, questions=questions)
+                except Exception as err:
+                    return Response(
+                        json.dumps({'status': 'failed', 'error': str(err)},
+                                   default=str),
+                        status.HTTP_409_CONFLICT
+                    )
+
+            content = {'status': 'success'}
+            return Response(content, status.HTTP_200_OK)
 
 
 # class FilledQuizExportHandlerView(APIView):
@@ -321,4 +445,8 @@ class QuizQuestionsHandlerView(APIView):
 #
 #         wb.save(filepath)
 #         self.write(f'/xlsx/{filename}')
+
+
+
+
 

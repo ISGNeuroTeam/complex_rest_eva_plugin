@@ -10,6 +10,7 @@ def decode_token(token):
 
 def get_current_user(request):
     # TODO: need check
+
     client_token = request.COOKIES.get('eva_token')
     current_user = None
     if client_token:
