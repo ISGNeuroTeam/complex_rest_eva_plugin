@@ -3,9 +3,8 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from complex_rest.plugins.db_connector.utils.db_connector import PostgresConnector
-from django.conf import settings
 import json
+from plugins.db_connector.connector_singleton import db
 
 
 class DashboardsView(APIView):
@@ -14,7 +13,6 @@ class DashboardsView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    db = PostgresConnector(settings.DB_POOL)
 
     def get(self, request):
         kwargs = {}
@@ -24,8 +22,8 @@ class DashboardsView(APIView):
         names_only = request.GET.get('names_only', None)
         if names_only:
             kwargs['names_only'] = names_only
-        dashs = self.db.get_dashs_data(**kwargs)
+        dashs = db.get_dashs_data(**kwargs)
         return Response(
-            {'data': dashs},
+            json.dumps({'data': dashs}),
             status.HTTP_200_OK
         )

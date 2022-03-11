@@ -1,6 +1,5 @@
 from rest.urls import path
 from cache import cache_page
-from .views.example import ExampleView
 from .views.hello import HelloView
 
 
@@ -11,6 +10,5 @@ from .views.hello import HelloView
 # ]
 
 urlpatterns = [
-    path('example/', ExampleView.as_view()),
     path('hello/', HelloView.as_view())
 ]

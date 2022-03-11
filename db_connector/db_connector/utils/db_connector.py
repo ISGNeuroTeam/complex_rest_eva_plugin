@@ -1,4 +1,3 @@
-# from pg_connector import PGConnector
 from .pg_connector import PGConnector
 from copy import deepcopy
 
