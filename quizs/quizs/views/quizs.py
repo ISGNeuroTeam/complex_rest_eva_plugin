@@ -3,6 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated, AllowAny
 import uuid
 import super_logger
+import requests
 # from django.conf import settings
 import json
 
@@ -11,13 +12,21 @@ from ..utils.get_user import get_current_user
 from ..settings import DB_POOL
 
 
+def print_request(request):
+    print(request.body)
+    print(request.data)
+    print(request.headers)
+    print(request.POST)
+    print(request.GET)
+
+
 class QuizsHandlerView(APIView):
     """
     That handler allows to get list of quizs with offset & limit params for pagination.
     """
 
-    permission_classes = (IsAuthenticated,)
-    # permission_classes = (AllowAny,)
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -37,18 +46,22 @@ class QuizHandlerView(APIView):
     There is four methods for four actions with quiz objects.
     - get:      returns quiz data by 'id' param;
     - post:     creates new quiz object in DB with data from json body;
-    - put:      edit existing quiz object in DB with data from json body;
+    - put:      edit existing quiz object in DB with data from json body by id;
     - delete:   delete existing quiz object from DB by 'id' param;
     """
 
-    permission_classes = (IsAuthenticated,)
-    # permission_classes = (AllowAny,)
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     http_method_names = ['get', 'post', 'put', 'delete']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
     db = PostgresConnector(DB_POOL)
 
     def get(self, request):
+        """
+        Example: http://0.0.0.0:8080/quizs/v1/qapi/quiz/?id=1
+        """
+
         quiz_id = request.GET.get('id', None)
         if not quiz_id:
             return Response(
@@ -66,8 +79,18 @@ class QuizHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
     def post(self, request):
-        quiz_name = request.GET.get('name', None)
-        questions = request.GET.get('questions', None)
+        """
+        Example:
+
+            http://0.0.0.0:8080/quizs/v1/qapi/quiz/
+            content = {"name":"123","questions":[{"text":"1","label":null,"description":"1","is_sign":false,"catalog_id":null,"childs":[],"type":"multi","sid":0}]}
+        """
+
+        data = request.data
+        quiz_name = data.get('name', None)
+        questions = data.get('questions', None)
+
+        print(quiz_name, questions)
         if None in [quiz_name, questions]:
             return Response(
                 json.dumps({'status': 'failed', 'error': "params 'name' and 'questions' is needed"}, default=str),
@@ -85,9 +108,12 @@ class QuizHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
     def put(self, request):
-        quiz_id = request.GET.get('id', None)
-        quiz_name = request.GET.get('name', None)
-        questions = request.GET.get('questions', None)
+
+        data = request.data
+        quiz_id = data.get('id', None)
+        quiz_name = data.get('name', None)
+        questions = data.get('questions', None)
+
         if not quiz_id:
             return Response(
                 json.dumps({'status': 'failed', 'error': "param 'id' is needed"}, default=str),
@@ -107,7 +133,9 @@ class QuizHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
     def delete(self, request):
+
         quiz_id = request.GET.get('id', None)
+
         if not quiz_id:
             return Response(
                 json.dumps({'status': 'failed', 'error': "params 'id' is needed"}, default=str),
@@ -134,6 +162,7 @@ class QuizFilledHandlerView(APIView):
     db = PostgresConnector(DB_POOL)
 
     def get(self, request):
+
         quiz_type_id = request.GET.get('id', None)
         offset = request.GET.get('offset', 0)
         limit = request.GET.get('limit', 10)
@@ -153,11 +182,14 @@ class QuizFilledHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
     def post(self, request):
+
         filled_ids = list()
-        data = json.loads(request.body) if request.body else dict()
-        for quiz in data:  # !!! CHECK !!!
-            quiz_type_id = request.GET.get('id', None)
-            questions = request.GET.get('questions', None)
+        data = request.data
+
+        for quiz_data in data:
+
+            quiz_type_id = quiz_data.get('id', None)
+            questions = quiz_data.get('questions', None)
 
             if None in [quiz_type_id, questions]:
                 return Response(
@@ -165,6 +197,7 @@ class QuizFilledHandlerView(APIView):
                     status.HTTP_400_BAD_REQUEST
                 )
             try:
+                # TODO: need check with authorised user
                 current_user = get_current_user(request)
                 if not current_user:
                     return Response(
@@ -191,14 +224,21 @@ class QuizQuestionsHandlerView(APIView):
     Input param is 'ids', like '?ids=1,2,3'.
     """
 
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (AllowAny,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
     db = PostgresConnector(DB_POOL)
 
     def get(self, request):
+        """
+        Example:
+            http://0.0.0.0:8080/quizs/v1/qapi/quiz/questions/?ids=1,2,3,4
+        """
+
         quiz_ids = request.GET.get('ids', None)
+
         if not quiz_ids:
             return Response(
                 json.dumps({'status': 'failed', 'error': "params 'ids' is needed"}, default=str),
@@ -207,7 +247,6 @@ class QuizQuestionsHandlerView(APIView):
         quiz_ids = quiz_ids.split(',')
         quiz_ids = [int(i) for i in quiz_ids if i]
         try:
-            # logger.debug(quiz_ids)
             questions = self.db.get_quiz_questions(quiz_ids=quiz_ids)
         except Exception as err:
             return Response(
@@ -229,7 +268,7 @@ class QuizQuestionsHandlerView(APIView):
 #     http_method_names = ['get']
 #     handler_id = str(uuid.uuid4())
 #     logger = super_logger.getLogger('quizs')
-#     db = PostgresConnector(settings.DB_POOL)
+#     db = PostgresConnector(DB_POOL)
 #
 #     # def initialize(self, **kwargs):
 #     #     super().initialize(kwargs['db_conn_pool'])
