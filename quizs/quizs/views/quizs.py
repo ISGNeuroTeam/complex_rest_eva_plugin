@@ -7,7 +7,7 @@ import requests
 # from django.conf import settings
 import json
 
-from complex_rest_eva_plugin.db_connector.db_connector.utils.db_connector import PostgresConnector
+from plugins.db_connector.connector_singleton import db
 from ..utils.get_user import get_current_user
 from ..settings import DB_POOL
 
@@ -30,14 +30,13 @@ class QuizsHandlerView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
-    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
         offset, limit = request.GET.get('offset', 0), request.GET.get('limit', 10)
 
-        quizs = self.db.get_quizs(limit=limit, offset=offset)
+        quizs = db.get_quizs(limit=limit, offset=offset)
 
-        content = {'data': quizs, 'count': self.db.get_quizs_count()}
+        content = {'data': quizs, 'count': db.get_quizs_count()}
         return Response(content, status.HTTP_200_OK)
 
 
@@ -55,7 +54,6 @@ class QuizHandlerView(APIView):
     http_method_names = ['get', 'post', 'put', 'delete']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
-    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
         """
@@ -69,7 +67,7 @@ class QuizHandlerView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         try:
-            quiz = self.db.get_quiz(quiz_id=quiz_id)
+            quiz = db.get_quiz(quiz_id=quiz_id)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
@@ -97,8 +95,8 @@ class QuizHandlerView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         try:
-            quiz_id = self.db.add_quiz(name=quiz_name,
-                                       questions=questions)
+            quiz_id = db.add_quiz(name=quiz_name,
+                                  questions=questions)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
@@ -120,7 +118,7 @@ class QuizHandlerView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         try:
-            quiz_id = self.db.update_quiz(quiz_id=quiz_id,
+            quiz_id = db.update_quiz(quiz_id=quiz_id,
                                           name=quiz_name,
                                           questions=questions)
         except Exception as err:
@@ -141,7 +139,7 @@ class QuizHandlerView(APIView):
                 json.dumps({'status': 'failed', 'error': "params 'id' is needed"}, default=str),
                 status.HTTP_400_BAD_REQUEST
             )
-        quiz_id = self.db.delete_quiz(quiz_id=quiz_id)
+        quiz_id = db.delete_quiz(quiz_id=quiz_id)
         content = {'data': quiz_id}
         return Response(content, status.HTTP_200_OK)
 
@@ -159,7 +157,6 @@ class QuizFilledHandlerView(APIView):
     http_method_names = ['get', 'post']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
-    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
 
@@ -168,7 +165,7 @@ class QuizFilledHandlerView(APIView):
         limit = request.GET.get('limit', 10)
 
         try:
-            filled_quizs = self.db.get_filled_quiz(quiz_id=quiz_type_id,
+            filled_quizs = db.get_filled_quiz(quiz_id=quiz_type_id,
                                                    offset=offset,
                                                    limit=limit)
         except Exception as err:
@@ -176,7 +173,7 @@ class QuizFilledHandlerView(APIView):
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
                 status.HTTP_409_CONFLICT
             )
-        count = self.db.get_filled_quizs_count(quiz_type_id) if quiz_type_id else len(filled_quizs)
+        count = db.get_filled_quizs_count(quiz_type_id) if quiz_type_id else len(filled_quizs)
 
         content = {'data': filled_quizs, 'count': count}
         return Response(content, status.HTTP_200_OK)
@@ -204,7 +201,7 @@ class QuizFilledHandlerView(APIView):
                         json.dumps({'status': 'failed', 'error': "unauthorized"}, default=str),
                         status.HTTP_401_UNAUTHORIZED
                     )
-                self.db.save_filled_quiz(user_id=current_user,
+                db.save_filled_quiz(user_id=current_user,
                                          quiz_id=quiz_type_id,
                                          questions=questions)
                 filled_ids.append(quiz_type_id)
@@ -229,7 +226,6 @@ class QuizQuestionsHandlerView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
-    db = PostgresConnector(DB_POOL)
 
     def get(self, request):
         """
@@ -247,7 +243,7 @@ class QuizQuestionsHandlerView(APIView):
         quiz_ids = quiz_ids.split(',')
         quiz_ids = [int(i) for i in quiz_ids if i]
         try:
-            questions = self.db.get_quiz_questions(quiz_ids=quiz_ids)
+            questions = db.get_quiz_questions(quiz_ids=quiz_ids)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
