@@ -108,5 +108,6 @@ stop.sh
 complex_rest_eva_plugin-*.tar.gz
 complex_rest_eva_plugin.conf
 venv.tar.gz
+*.conf
 
 nginx/

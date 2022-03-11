@@ -1,6 +1,8 @@
 import configparser
 from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults, merge_dicts
+from core.settings.ini_config import merge_ini_config_with_defaults
+import os
+from psycopg2.pool import ThreadedConnectionPool
 
 default_ini_config = {
     'logging': {
@@ -14,6 +16,20 @@ default_ini_config = {
         'password': 'complex_rest_eva_plugin'
     }
 }
+
+# # # # # #  Configuration section  # # # # # # #
+
+basedir = os.path.dirname(os.path.abspath(__file__))
+
+ot_simple_rest_conf = configparser.ConfigParser()
+ot_simple_rest_conf.read(os.path.join(basedir, 'db_connector.conf'))
+
+db_conf = dict(ot_simple_rest_conf['db_conf_eva'])
+pool_conf = dict(ot_simple_rest_conf['db_pool_conf'])
+
+# # # # # # # # # # # # # # # # # # # # # # # # # #
+
+DB_POOL = ThreadedConnectionPool(int(pool_conf['min_size']), int(pool_conf['max_size']), **db_conf)
 
 config_parser = configparser.ConfigParser()
 

@@ -15,3 +15,13 @@ port = 5432
 database = db_connector
 user = db_connector
 password = db_connector
+
+[db_conf_eva]
+host = localhost
+database = eva
+user = dispatcher
+password = password
+
+[db_pool_conf]
+min_size = 10
+max_size = 20

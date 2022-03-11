@@ -24,18 +24,8 @@ basedir = os.path.dirname(os.path.abspath(__file__))
 ot_simple_rest_conf = configparser.ConfigParser()
 ot_simple_rest_conf.read(os.path.join(basedir, 'dashboards.conf'))
 
-db_conf = dict(ot_simple_rest_conf['db_conf_eva'])
-mem_conf = dict(ot_simple_rest_conf['mem_conf'])
-disp_conf = dict(ot_simple_rest_conf['dispatcher'])
-resolver_conf = dict(ot_simple_rest_conf['resolver'])
-static_conf = dict(ot_simple_rest_conf['static'])
-user_conf = dict(ot_simple_rest_conf['user'])
-pool_conf = dict(ot_simple_rest_conf['db_pool_conf'])
 
-# # # # # # # # # # # # # # # # # # # # # # # # # #
-
-DB_POOL = ThreadedConnectionPool(int(pool_conf['min_size']), int(pool_conf['max_size']), **db_conf)
-
+STATIC_CONF = dict(ot_simple_rest_conf['static'])
 
 config_parser = configparser.ConfigParser()
 
