@@ -1,6 +1,7 @@
 [logging]
 separate_logs = DEBUG
 common_logs = ERROR
+level = INFO
 
 [logger1]
 type = JSON
