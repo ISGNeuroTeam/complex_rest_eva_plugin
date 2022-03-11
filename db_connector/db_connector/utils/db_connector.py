@@ -1,4 +1,4 @@
-from tools.pg_connector import PGConnector
+from .pg_connector import PGConnector
 from copy import deepcopy
 
 __author__ = "Anton Khromov"
