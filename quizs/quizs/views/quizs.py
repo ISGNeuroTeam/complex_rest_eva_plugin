@@ -28,13 +28,13 @@ class QuizsHandlerView(APIView):
     That handler allows to get list of quizs with offset & limit params for pagination.
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
 
     def get(self, request):
+
         offset, limit = request.GET.get('offset', 0), request.GET.get('limit', 10)
 
         quizs = db.get_quizs(limit=limit, offset=offset)
@@ -52,16 +52,12 @@ class QuizHandlerView(APIView):
     - delete:   delete existing quiz object from DB by 'id' param;
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     http_method_names = ['get', 'post', 'put', 'delete']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
 
     def get(self, request):
-        """
-        Example: http://0.0.0.0:8080/quizs/v1/qapi/quiz/?id=1
-        """
 
         quiz_id = request.GET.get('id', None)
         if not quiz_id:
@@ -80,12 +76,6 @@ class QuizHandlerView(APIView):
         return Response(content, status.HTTP_200_OK)
 
     def post(self, request):
-        """
-        Example:
-
-            http://0.0.0.0:8080/quizs/v1/qapi/quiz/
-            content = {"name":"123","questions":[{"text":"1","label":null,"description":"1","is_sign":false,"catalog_id":null,"childs":[],"type":"multi","sid":0}]}
-        """
 
         data = request.data
         quiz_name = data.get('name', None)
@@ -155,8 +145,7 @@ class QuizFilledHandlerView(APIView):
     - post:     adds new fille quiz object to DB with data from json body;
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     http_method_names = ['get', 'post']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -169,8 +158,9 @@ class QuizFilledHandlerView(APIView):
 
         try:
             filled_quizs = db.get_filled_quiz(quiz_id=quiz_type_id,
-                                                   offset=offset,
-                                                   limit=limit)
+                                              offset=offset,
+                                              limit=limit)
+            print(filled_quizs)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
@@ -197,16 +187,16 @@ class QuizFilledHandlerView(APIView):
                     status.HTTP_400_BAD_REQUEST
                 )
             try:
-                # TODO: need check with authorised user; need `eva_token` in cookies
                 current_user = get_current_user(request)
                 if not current_user:
                     return Response(
                         json.dumps({'status': 'failed', 'error': "unauthorized"}, default=str),
                         status.HTTP_401_UNAUTHORIZED
                     )
-                db.save_filled_quiz(user_id=current_user,
-                                         quiz_id=quiz_type_id,
-                                         questions=questions)
+                db.save_filled_quiz(user_id=None,
+                                    user=current_user,
+                                    quiz_id=quiz_type_id,
+                                    questions=questions)
                 filled_ids.append(quiz_type_id)
             except Exception as err:
                 return Response(
@@ -224,17 +214,12 @@ class QuizQuestionsHandlerView(APIView):
     Input param is 'ids', like '?ids=1,2,3'.
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
 
     def get(self, request):
-        """
-        Example:
-            http://0.0.0.0:8080/quizs/v1/qapi/quiz/questions/?ids=1,2,3,4
-        """
 
         quiz_ids = request.GET.get('ids', None)
 
@@ -265,8 +250,8 @@ class QuizExportJsonHandlerView(APIView):
     Json files returns in 'tar.gz' package with uuid-name.
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
+    # permission_classes = (AllowAny,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
@@ -329,30 +314,27 @@ class QuizImportJsonHandlerView(APIView):
     Or you can put your own 'tar.gz' file with inner quizs json files.
     """
 
-    # permission_classes = (IsAuthenticated,)
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
+    # permission_classes = (AllowAny,)
     http_method_names = ['post']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('quizs')
+    # parser_classes = [MultiPartParser]
 
     def post(self, request):
 
-        body = request.body
-        args = {}
-        files = {}
-
-        # TODO: how parse_body_argument content in django?
-        tornado.httputil.parse_body_arguments(request.headers['Content-Type'], body, args, files)
-        print(body, args, files)
+        files = request.FILES
 
         if not files or not files.get('file'):
             content = {{'status': 'no file in payload'}}
             return Response(content, status.HTTP_204_NO_CONTENT)
 
-        tar_file = files['file'][0]
+        tar_file = dict(files)['file'][0]
 
         # wraps bytes to work with it like with file
-        file_like_object = io.BytesIO(tar_file['body'])
+        # file_like_object = io.BytesIO(tar_file['body'])
+        file_like_object = tar_file.file
+
         with tarfile.open(mode='r:gz', fileobj=file_like_object) as tar:
             for quiz in tar.getmembers():
                 quiz_data = tar.extractfile(quiz)

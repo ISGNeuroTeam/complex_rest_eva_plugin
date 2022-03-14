@@ -946,12 +946,14 @@ class PostgresConnector(PGConnector):
             quiz['fill_date'] = str(quiz.fill_date)
         return f_quizs
 
-    def save_filled_quiz(self, *, user_id, quiz_id, questions):
+    def save_filled_quiz(self, *, user_id, user=None, quiz_id, questions):
         with self.transaction('save_quiz') as conn:
-            user = self.execute_query('SELECT name FROM "user" WHERE id = %s;', conn=conn,
-                                      params=(user_id,), as_obj=True)
+            if not user:
+                user = self.execute_query('SELECT name FROM "user" WHERE id = %s;', conn=conn,
+                                          params=(user_id,), as_obj=True)
+                user = user.name
             quiz = self.execute_query("INSERT INTO filled_quiz (filler, quiz_id) VALUES (%s, %s) RETURNING id;",
-                                      conn=conn, params=(user.name, quiz_id,), as_obj=True)
+                                      conn=conn, params=(user, quiz_id,), as_obj=True)
 
             for sid, q in enumerate(questions, 1):
                 answer = q.pop('answer', None)
