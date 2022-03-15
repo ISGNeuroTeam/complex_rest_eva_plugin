@@ -15,5 +15,10 @@ database = dashboards
 user = dashboards
 password = dashboards
 
-[mem_conf]
-path = /opt/otp/caches/
+[static]
+use_nginx = True
+base_url = cache/{}
+static_path = /opt/otp/static/
+
+[general]
+logs_path = .

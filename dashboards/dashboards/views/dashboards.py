@@ -1,6 +1,6 @@
 from rest.views import APIView
 from rest.response import Response, status
-from rest.permissions import IsAuthenticated
+from rest.permissions import IsAdminUser
 import uuid
 import super_logger
 import json
@@ -9,7 +9,7 @@ from plugins.db_connector.connector_singleton import db
 
 class DashboardsView(APIView):
 
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAdminUser,)  # TODO if 'list_dashs' in self.permissions
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')

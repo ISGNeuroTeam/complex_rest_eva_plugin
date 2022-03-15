@@ -1,6 +1,6 @@
 from rest.views import APIView
 from rest.response import Response, status
-from rest.permissions import AllowAny
+from rest.permissions import IsAuthenticated
 from ..utils.interesting_fields_builder import InterestingFieldsBuilder
 from ..utils.interesting_fields_loader import InterestingFieldsLoader
 from typing import Dict
@@ -10,8 +10,20 @@ import json
 
 
 class InterestingFieldsView(APIView):
+    """
+    Returns a list of dictionaries where every dictionary represents interesting fields for one column of data
 
-    permission_classes = (AllowAny,)
+    interesting fields consist of:
+    :id: serial number of a column
+    :text: name of a column
+    :totalCount: number of not empty cells in the column (null is considered an empty cell)
+    :static: list of dictionaries where every dictionary is an info about every unique value in a column consists of:
+            :value: value itself
+            :count: how many times the value appears in the column
+            :%: percent of count from all rows in the data table
+    """
+
+    permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
