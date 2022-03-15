@@ -12,9 +12,17 @@
 - [x] QuizFilledHandlerView
   - [x] get
   - [x] post
+- [ ] FilledQuizExportHandlerView
 - [x] QuizQuestionsHandlerView
   - [x] get
 - [x] QuizExportJsonHandlerView
   - [x] get
 - [x] QuizImportJsonHandlerView
   - [x] post
+- [x] CatalogsListHandlerView
+  - [x] get
+- [x] CatalogHandlerView
+  - [x] get
+  - [x] post
+  - [x] put
+  - [x] delete  
