@@ -6,7 +6,9 @@ from rest.response import Response, ErrorResponse, SuccessResponse, status
 from rest.permissions import IsAuthenticated, AllowAny
 import super_logger
 
-from plugins.themes.utils.theme_manager import ThemeManager
+# needed for db connection
+from plugins.db_connector.connector_singleton import db
+
 
 
 class ThemeListView(APIView):
@@ -20,7 +22,7 @@ class ThemeListView(APIView):
         _limit = request.query_params.get('limit', 100)
 
         try:
-            themes_list = ThemeManager.get_themes(limit=_limit, offset=_offset)
+            themes_list = db.get_themes_data(limit=_limit, offset=_offset)
         except Exception as err:
             return Response(
                 {'status': 'failed', 'error': str(err)},
@@ -29,9 +31,8 @@ class ThemeListView(APIView):
 
         self.logger.debug(f'ThemeListView RESPONSE: {themes_list}')
         return \
-            Response(
-                themes_list,
-                status.HTTP_200_OK
+            SuccessResponse(
+                data={"data":themes_list}
             )
 
 class ThemeGetView(APIView):
@@ -49,7 +50,7 @@ class ThemeGetView(APIView):
         self.logger.debug(f'ThemeGetView Request theme name: {theme_name}')
 
         try:
-            theme = ThemeManager.get_theme(theme_name=theme_name)
+            theme = db.get_theme(theme_name=theme_name)
         except Exception as err:
             return Response(
                 {'status': 'failed', 'error': str(err)},
@@ -58,9 +59,9 @@ class ThemeGetView(APIView):
 
         self.logger.debug(f'ThemeGetHandler RESPONSE: {theme}')
 
-        return Response(
-                theme,
-                status.HTTP_200_OK
+        return \
+            SuccessResponse(
+                data=theme
             )
 
 class ThemeCreateView(APIView):
@@ -74,9 +75,11 @@ class ThemeCreateView(APIView):
         if theme_name is None:
             return ErrorResponse(error_message="param 'themeName' is needed")
 
+        # 1. create theme in DB
         try:
             self.logger.debug(f'ThemeHandler create theme, name: {theme_name} with body: {json.dumps(request.data)}')
-            theme = ThemeManager.create_theme(theme_name=theme_name, content=json.dumps(request.data))
+            theme = db.add_theme(theme_name=theme_name,
+                                      content=json.dumps(request.data))
 
         except Exception as err:
             return Response(
@@ -84,9 +87,10 @@ class ThemeCreateView(APIView):
                 status.HTTP_409_CONFLICT
             )
 
-        return Response(
-                theme,
-                status.HTTP_200_OK
+        # 2. return saved theme
+        return \
+            SuccessResponse(
+                data=theme
             )
 
 
@@ -101,9 +105,19 @@ class ThemeDeleteView(APIView):
         if theme_name is None:
             return ErrorResponse(error_message="param 'themeName' is needed")
 
+        # 1. check if theme exists
         try:
-            theme = ThemeManager.delete_theme(theme_name=theme_name)
-            self.logger.debug(f'ThemeHandler Deleted theme name: {theme_name} with body: {theme}')
+            theme = db.get_theme(theme_name=theme_name)
+        except Exception as err:
+            return Response(
+                {'status': 'failed', 'error': str(err)},
+                status.HTTP_409_CONFLICT
+            )
+
+        # 2. delete theme
+        try:
+            deleted_theme_name = db.delete_theme(theme_name=theme_name)
+            self.logger.debug(f'ThemeHandler Deleted theme name: {deleted_theme_name} with body: {theme}')
         except Exception as err:
             return Response(
                 {'status': 'failed', 'error': str(err)},
@@ -111,7 +125,7 @@ class ThemeDeleteView(APIView):
             )
 
         # 3. return deleted theme
-        return Response(
-                theme,
-                status.HTTP_200_OK
+        return \
+            SuccessResponse(
+                data=theme
             )
