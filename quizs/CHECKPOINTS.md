@@ -12,7 +12,8 @@
 - [x] QuizFilledHandlerView
   - [x] get
   - [x] post
-- [ ] FilledQuizExportHandlerView
+- [x] FilledQuizExportHandlerView
+  - [x] get
 - [x] QuizQuestionsHandlerView
   - [x] get
 - [x] QuizExportJsonHandlerView

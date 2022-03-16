@@ -4,7 +4,7 @@ from .views.example import ExampleView
 from .views.hello import HelloView
 from .views.quizs import (QuizsHandlerView, QuizHandlerView, QuizFilledHandlerView, QuizQuestionsHandlerView,
                           QuizExportJsonHandlerView, QuizImportJsonHandlerView, CatalogsListHandlerView,
-                          CatalogHandlerView)
+                          CatalogHandlerView, FilledQuizExportHandlerView)
 
 
 # Use cache_page decorator for caching view
@@ -31,4 +31,5 @@ path('qapi/catalog/', CatalogHandlerView.as_view()),
 path('qapi/catalog/create/', CatalogHandlerView.as_view()),
 path('qapi/catalog/edit/', CatalogHandlerView.as_view()),
 path('qapi/catalog/delete/', CatalogHandlerView.as_view()),
+path('qapi/quiz/filled/export/', FilledQuizExportHandlerView.as_view()),
 ]
