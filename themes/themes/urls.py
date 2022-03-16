@@ -9,8 +9,8 @@ from .views.themes import *
 # ]
 
 urlpatterns = [
-    path('themes/', ThemeListView.as_view()),
-    path('theme/', ThemeGetView.as_view()),
+    path('themes', ThemeListView.as_view()),
+    path('theme', ThemeGetView.as_view()),
     path('theme/create', ThemeCreateView.as_view()),
     path('theme/delete', ThemeDeleteView.as_view()),
 ]
