@@ -1,4 +1,4 @@
-from rest.urls import path
+from django.urls import re_path
 from cache import cache_page
 from .views.themes import *
 
@@ -9,8 +9,8 @@ from .views.themes import *
 # ]
 
 urlpatterns = [
-    path('themes', ThemeListView.as_view()),
-    path('theme', ThemeGetView.as_view()),
-    path('theme/create', ThemeCreateView.as_view()),
-    path('theme/delete', ThemeDeleteView.as_view()),
+    re_path(r'^themes/?$', ThemeListView.as_view()),
+    re_path(r'^theme/?$', ThemeGetView.as_view()),
+    re_path(r'^theme/create/?$', ThemeCreateView.as_view()),
+    re_path(r'^theme/delete/?$', ThemeDeleteView.as_view()),
 ]

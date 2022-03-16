@@ -13,33 +13,33 @@ class TestThemes(TestCase):
 
 
     def test_theme_list(self):
-        response = self.client.get('/themes/v1/themes/')
+        response = self.client.get('/themes/v1/themes')
 
         # checking status code
         self.assertEqual(response.status_code, 200)
 
 
     def test_create_theme(self):
-        response = self.client.post('/themes/v1/theme/create/', {'themeName':'TestThemeNamed', "color":"red"})
+        response = self.client.post('/themes/v1/theme/create', {'themeName':'TestThemeNamed', "color":"red"})
 
         # checking status code
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get('/themes/v1/themes/')
+        response = self.client.get('/themes/v1/themes')
         self.assertNotEqual(len(response.json()), 0)
 
     def test_get_theme(self):
-        response = self.client.get('/themes/v1/theme/', {'themeName':'TestThemeNamed'})
+        response = self.client.get('/themes/v1/theme', {'themeName':'TestThemeNamed'})
 
         # checking status code
         self.assertEqual(response.status_code, 200)
 
     def test_delete_theme(self):
-        response = self.client.delete('/themes/v1/theme/delete/', {'TestThemeNamed': 'TestTheme'})
+        response = self.client.delete('/themes/v1/theme/delete', {'themeName': 'TestThemeNamed'})
 
         # checking status code
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.get('/themes/v1/themes/')
+        response = self.client.get('/themes/v1/themes')
         self.assertEqual(len(response.json()), 0)
 
