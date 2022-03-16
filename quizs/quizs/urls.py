@@ -1,8 +1,11 @@
 from django.urls import re_path
 from .views.hello import HelloView
-from .views.quizs import (QuizsHandlerView, QuizHandlerView, QuizFilledHandlerView, QuizQuestionsHandlerView,
-                          QuizExportJsonHandlerView, QuizImportJsonHandlerView, CatalogsListHandlerView,
-                          CatalogHandlerView, FilledQuizExportHandlerView)
+from .views.quiz_handler import QuizsHandlerView, QuizHandlerView
+from .views.catalog import CatalogsListHandlerView, CatalogHandlerView
+from .views.quiz_import_export import QuizExportJsonHandlerView, QuizImportJsonHandlerView, FilledQuizExportHandlerView
+from .views.quiz_filled_handler import QuizFilledHandlerView
+from .views.quiz_questions_handler import QuizQuestionsHandlerView
+
 
 urlpatterns = [
     re_path('hello/', HelloView.as_view()),
