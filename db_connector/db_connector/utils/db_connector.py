@@ -827,6 +827,9 @@ class PostgresConnector(PGConnector):
         return childs
 
     def update_quiz(self, *, quiz_id, name, questions=None):
+        if name and self.check_quiz_exists(quiz_name=name):
+            raise QueryError(f'quiz {name} already exists')
+
         with self.transaction('update_quiz_data') as conn:
             if name:
                 self.execute_query("UPDATE quiz SET name = %s WHERE id = %s;",
