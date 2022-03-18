@@ -1,8 +1,10 @@
 import configparser
 import os
 from pathlib import Path
+
 from core.settings.ini_config import merge_ini_config_with_defaults
-from psycopg2.pool import ThreadedConnectionPool
+from plugins.db_connector.connector_singleton import db as DB_CONN
+
 
 default_ini_config = {
     'logging': {

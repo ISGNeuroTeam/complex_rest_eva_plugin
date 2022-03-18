@@ -8,7 +8,7 @@ all:
  build - build project into build directory, with configuration file and environment\n\
  clean - clean all addition file, build directory and output archive file\n\
  test - run all tests\n\
- pack - make output archive, file name format \"complex_rest_eva_plugin_vX.Y.Z_BRANCHNAME.tar.gz\"\n\
+ pack - make output archive, file name format \"themes_vX.Y.Z_BRANCHNAME.tar.gz\"\n\
 Addition section:\n\
  venv\n\
 "
@@ -21,46 +21,46 @@ SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
 pack: make_build
 	$(SET_VERSION)
 	$(SET_BRANCH)
-	rm -f complex_rest_eva_plugin-*.tar.gz
-	echo Create archive \"complex_rest_eva_plugin-$(VERSION)-$(BRANCH).tar.gz\"
-	cd make_build; tar czf ../complex_rest_eva_plugin-$(VERSION)-$(BRANCH).tar.gz complex_rest_eva_plugin
+	rm -f themes-*.tar.gz
+	echo Create archive \"themes-$(VERSION)-$(BRANCH).tar.gz\"
+	cd make_build; tar czf ../themes-$(VERSION)-$(BRANCH).tar.gz themes
 
 clean_pack:
-	rm -f complex_rest_eva_plugin-*.tar.gz
+	rm -f themes-*.tar.gz
 
 
-complex_rest_eva_plugin.tar.gz: build
-	cd make_build; tar czf ../complex_rest_eva_plugin.tar.gz complex_rest_eva_plugin && rm -rf ../make_build
+themes.tar.gz: build
+	cd make_build; tar czf ../themes.tar.gz themes && rm -rf ../make_build
 
 build: make_build
 
-make_build: venv venv_pack
+make_build: venv venv.tar.gz
 	# required section
 	echo make_build
 	mkdir make_build
 
-	cp -R ./complex_rest_eva_plugin make_build
-	rm make_build/complex_rest_eva_plugin/complex_rest_eva_plugin.conf
-	mv make_build/complex_rest_eva_plugin/complex_rest_eva_plugin.conf.example make_build/complex_rest_eva_plugin/complex_rest_eva_plugin.conf
-	cp *.md make_build/complex_rest_eva_plugin/
-	cp *.py make_build/complex_rest_eva_plugin/
+	cp -R ./themes make_build
+	rm make_build/themes/themes.conf
+	mv make_build/themes/themes.conf.example make_build/themes/themes.conf
+	cp *.md make_build/themes/
+	cp *.py make_build/themes/
 	if [ -s requirements.txt ]; then \
-		mkdir make_build/complex_rest_eva_plugin/venv;\
-		tar -xzf ./venv.tar.gz -C make_build/complex_rest_eva_plugin/venv; \
+		mkdir make_build/themes/venv;\
+		tar -xzf ./venv.tar.gz -C make_build/themes/venv; \
 	fi
 
 clean_build:
 	rm -rf make_build
 
-venv: clean_venv
+venv:
 	if [ -s requirements.txt ]; then \
 		echo Create venv; \
 		conda create --copy -p ./venv -y; \
-		conda install -p ./venv python==3.9.7 -y; \
+		conda install -p ./venv python==3.8.5 -y; \
 		./venv/bin/pip install --no-input  -r requirements.txt; \
 	fi
 
-venv_pack: venv
+venv.tar.gz: venv
 	if [ -s requirements.txt ]; then \
 		conda pack -p ./venv -o ./venv.tar.gz; \
 	fi
@@ -70,25 +70,13 @@ clean_venv:
 	rm -f ./venv.tar.gz
 
 
-complex_rest:
-	git clone git@github.com:ISGNeuroTeam/complex_rest.git
-	{ cd ./complex_rest; git checkout develop; make venv; make redis; }
-	ln -s ../../../../complex_rest_eva_plugin/complex_rest_eva_plugin ./complex_rest/complex_rest/plugins/complex_rest_eva_plugin
+clean: clean_build clean_venv clean_pack clean_test
 
-clean_complex_rest:
-ifneq (,$(wildcard ./complex_rest))
-	{ cd ./complex_rest; make clean;}
-	rm -f ./complex_rest/plugins/complex_rest_eva_plugin
-	rm -rf ./complex_rest
-endif
-
-clean: clean_build clean_venv clean_pack clean_test clean_complex_rest
-
-test: venv complex_rest
+test: venv
 	@echo "Testing..."
-	./complex_rest/venv/bin/python ./complex_rest/complex_rest/manage.py test ./tests --settings=core.settings.test --noinput
 
-clean_test: clean_complex_rest
+
+clean_test:
 	@echo "Clean tests"
 
 

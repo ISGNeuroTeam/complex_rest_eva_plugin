@@ -5,7 +5,7 @@ import super_logger
 import uuid
 import json
 
-from plugins.db_connector.connector_singleton import db
+from ..settings import DB_CONN
 from ..utils.get_user import get_current_user
 
 
@@ -29,9 +29,9 @@ class QuizFilledHandlerView(APIView):
         limit = request.GET.get('limit', 10)
 
         try:
-            filled_quizs = db.get_filled_quiz(quiz_id=quiz_type_id,
-                                              offset=offset,
-                                              limit=limit)
+            filled_quizs = DB_CONN.get_filled_quiz(quiz_id=quiz_type_id,
+                                                   offset=offset,
+                                                   limit=limit)
             print(filled_quizs)
         except Exception as err:
             return Response(
@@ -39,7 +39,7 @@ class QuizFilledHandlerView(APIView):
                 status.HTTP_409_CONFLICT
             )
 
-        count = db.get_filled_quizs_count(quiz_type_id) if quiz_type_id else len(filled_quizs)
+        count = DB_CONN.get_filled_quizs_count(quiz_type_id) if quiz_type_id else len(filled_quizs)
 
         content = {'data': filled_quizs, 'count': count}
         return Response(content, status.HTTP_200_OK)
@@ -64,10 +64,10 @@ class QuizFilledHandlerView(APIView):
                         json.dumps({'status': 'failed', 'error': "unauthorized"}, default=str),
                         status.HTTP_401_UNAUTHORIZED
                     )
-                db.save_filled_quiz(user_id=None,
-                                    user=current_user,
-                                    quiz_id=quiz_type_id,
-                                    questions=questions)
+                DB_CONN.save_filled_quiz(user_id=None,
+                                         user=current_user,
+                                         quiz_id=quiz_type_id,
+                                         questions=questions)
                 filled_ids.append(quiz_type_id)
             except Exception as err:
                 return Response(

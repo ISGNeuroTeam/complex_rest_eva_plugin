@@ -1,3 +1,6 @@
+# Config
+**.conf
+
 # Django #
 *.log
 *.pot
@@ -105,8 +108,8 @@ GitHub.sublime-settings
 
 start.sh
 stop.sh
-complex_rest_eva_plugin-*.tar.gz
-complex_rest_eva_plugin.conf
+db_connector-*.tar.gz
+db_connector.conf
 venv.tar.gz
 
 nginx/

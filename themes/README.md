@@ -1,4 +1,4 @@
-# complex_rest_eva_plugin
+# themes
 
 Plugin for [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
@@ -12,13 +12,13 @@ Deploy [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
 ### Installing
 
-* Make symlink for ./complex_rest_eva_plugin/complex_rest_eva_plugin in plugins directory
+* Make symlink for ./themes/themes in plugins directory
 * Run complex rest server
 
 ## Running the tests
 Run all tests:
 ```bash
-python ./complex_rest/manage.py test ./plugin_dev/complex_rest_eva_plugin/tests --settings=core.settings.test
+python ./complex_rest/manage.py test ./plugin_dev/themes/tests --settings=core.settings.test
 ```
 
 ## Deployment

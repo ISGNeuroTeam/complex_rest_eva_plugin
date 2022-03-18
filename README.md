@@ -12,22 +12,14 @@ Deploy [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
 ### Installing
 
-* Make symlink for ./complex_rest_eva_plugin/complex_rest_eva_plugin in plugins directory
+* Make symlink for each plugin `./complex_rest_eva_plugin/<plugin_name>/<plugin_name>` in `plugins` directory
 * Run complex rest server
 
 ## Running the tests
-Run all tests:
+Run all tests for plugin:
 ```bash
-python ./complex_rest/manage.py test ./plugin_dev/complex_rest_eva_plugin/tests --settings=core.settings.test
+python ./complex_rest/manage.py test ./plugins/<plugin_name>/tests --settings=core.settings.test
 ```
-
-## Deployment
-
-* Make plugin archive:
-```bash
-make pack
-```
-* Unpack archive into complex_rest plugins directory
 
 ## Built With
 

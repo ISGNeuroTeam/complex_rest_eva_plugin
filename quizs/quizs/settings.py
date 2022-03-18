@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 from core.settings.ini_config import merge_ini_config_with_defaults
 
+from plugins.db_connector.connector_singleton import db as DB_CONN
+
 
 default_ini_config = {
     'logging': {
@@ -24,13 +26,7 @@ basedir = os.path.dirname(os.path.abspath(__file__))
 ot_simple_rest_conf = configparser.ConfigParser()
 ot_simple_rest_conf.read(os.path.join(basedir, 'quizs.conf'))
 
-db_conf = dict(ot_simple_rest_conf['db_conf_eva'])
-mem_conf = dict(ot_simple_rest_conf['mem_conf'])
-disp_conf = dict(ot_simple_rest_conf['dispatcher'])
-resolver_conf = dict(ot_simple_rest_conf['resolver'])
 STATIC_CONF = dict(ot_simple_rest_conf['static'])
-user_conf = dict(ot_simple_rest_conf['user'])
-pool_conf = dict(ot_simple_rest_conf['db_pool_conf'])
 
 # # # # # # # # # # # # # # # # # # # # # # # # # #
 

@@ -13,5 +13,3 @@ class HelloView(APIView):
             },
             status.HTTP_200_OK
         )
-
-

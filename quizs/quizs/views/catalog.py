@@ -5,7 +5,7 @@ import super_logger
 import uuid
 import json
 
-from plugins.db_connector.connector_singleton import db
+from ..settings import DB_CONN
 
 
 class CatalogsListHandlerView(APIView):
@@ -19,9 +19,9 @@ class CatalogsListHandlerView(APIView):
 
         offset, limit = request.GET.get('offset', 0), request.GET.get('limit', 10)
 
-        catalogs = db.get_catalogs_data(limit=limit, offset=offset)
+        catalogs = DB_CONN.get_catalogs_data(limit=limit, offset=offset)
 
-        content = {'data': catalogs, 'count': db.get_catalogs_count()}
+        content = {'data': catalogs, 'count': DB_CONN.get_catalogs_count()}
         return Response(content, status.HTTP_200_OK)
 
 
@@ -44,7 +44,7 @@ class CatalogHandlerView(APIView):
                     )
 
         try:
-            catalog = db.get_catalog(catalog_id=catalog_id)
+            catalog = DB_CONN.get_catalog(catalog_id=catalog_id)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)},
@@ -70,7 +70,7 @@ class CatalogHandlerView(APIView):
             )
 
         try:
-            catalog_id = db.add_catalog(name=catalog_name,
+            catalog_id = DB_CONN.add_catalog(name=catalog_name,
                                              content=content)
         except Exception as err:
             return Response(
@@ -98,9 +98,9 @@ class CatalogHandlerView(APIView):
             )
 
         try:
-            catalog_id = db.update_catalog(catalog_id=catalog_id,
-                                           name=catalog_name,
-                                           content=content)
+            catalog_id = DB_CONN.update_catalog(catalog_id=catalog_id,
+                                                name=catalog_name,
+                                                content=content)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)},
@@ -121,7 +121,7 @@ class CatalogHandlerView(APIView):
                            default=str),
                 status.HTTP_400_BAD_REQUEST
             )
-        catalog_id = db.delete_catalog(catalog_id=catalog_id)
+        catalog_id = DB_CONN.delete_catalog(catalog_id=catalog_id)
 
         content = {'id': catalog_id}
         return Response(content, status.HTTP_200_OK)

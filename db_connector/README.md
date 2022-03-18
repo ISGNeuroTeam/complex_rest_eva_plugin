@@ -1,4 +1,4 @@
-# complex_rest_eva_plugin
+# db_connector
 
 Plugin for [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
@@ -12,13 +12,13 @@ Deploy [complex rest](https://github.com/ISGNeuroTeam/complex_rest/tree/develop)
 
 ### Installing
 
-* Make symlink for ./complex_rest_eva_plugin/complex_rest_eva_plugin in plugins directory
+* Make symlink for ./db_connector/db_connector in plugins directory
 * Run complex rest server
 
 ## Running the tests
 Run all tests:
 ```bash
-python ./complex_rest/manage.py test ./plugin_dev/complex_rest_eva_plugin/tests --settings=core.settings.test
+python ./complex_rest/manage.py test ./plugin_dev/db_connector/tests --settings=core.settings.test
 ```
 
 ## Deployment

@@ -10,8 +10,7 @@ import uuid
 import json
 import os
 
-from plugins.db_connector.connector_singleton import db
-from ..settings import STATIC_CONF
+from ..settings import STATIC_CONF, DB_CONN
 
 
 class QuizExportJsonHandlerView(APIView):
@@ -40,7 +39,7 @@ class QuizExportJsonHandlerView(APIView):
 
             for qid in quiz_ids:
                 try:
-                    quiz_data = db.get_quiz(quiz_id=qid)
+                    quiz_data = DB_CONN.get_quiz(quiz_id=qid)
                     if not quiz_data:
                         return Response(
                             json.dumps({'status': 'failed', 'error': f'No quiz with id={qid}'}, default=str),
@@ -113,7 +112,7 @@ class QuizImportJsonHandlerView(APIView):
                         status.HTTP_400_BAD_REQUEST
                     )
                 try:
-                    db.add_quiz(name=quiz_name, questions=questions)
+                    DB_CONN.add_quiz(name=quiz_name, questions=questions)
                 except Exception as err:
                     return Response(
                         json.dumps({'status': 'failed', 'error': str(err)},
@@ -183,7 +182,7 @@ class FilledQuizExportHandlerView(APIView):
         quiz_id = int(quiz_id)
 
         try:
-            quiz_data = db.get_filled_quiz(quiz_id=quiz_id, current=True)
+            quiz_data = DB_CONN.get_filled_quiz(quiz_id=quiz_id, current=True)
             quiz_data = quiz_data[0] if quiz_data else None
             if not quiz_data:
                 return Response(

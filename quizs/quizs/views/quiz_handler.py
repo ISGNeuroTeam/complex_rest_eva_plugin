@@ -5,7 +5,7 @@ import super_logger
 import uuid
 import json
 
-from plugins.db_connector.connector_singleton import db
+from ..settings import DB_CONN
 
 
 class QuizsHandlerView(APIView):
@@ -25,11 +25,11 @@ class QuizsHandlerView(APIView):
 
     @property
     def quizs(self):
-        return db.get_quizs(limit=self._limit, offset=self._offset)
+        return DB_CONN.get_quizs(limit=self._limit, offset=self._offset)
 
     @property
     def quizs_count(self):
-        return db.get_quizs_count()
+        return DB_CONN.get_quizs_count()
 
     def get(self, request):
 
@@ -68,7 +68,7 @@ class QuizHandlerView(APIView):
             )
 
         try:
-            quiz = db.get_quiz(quiz_id=self._quiz_id)
+            quiz = DB_CONN.get_quiz(quiz_id=self._quiz_id)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
@@ -90,8 +90,8 @@ class QuizHandlerView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
         try:
-            quiz_id = db.add_quiz(name=quiz_name,
-                                  questions=questions)
+            quiz_id = DB_CONN.add_quiz(name=quiz_name,
+                                       questions=questions)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
@@ -114,7 +114,7 @@ class QuizHandlerView(APIView):
             )
 
         try:
-            quiz_id = db.update_quiz(quiz_id=quiz_id,
+            quiz_id = DB_CONN.update_quiz(quiz_id=quiz_id,
                                           name=quiz_name,
                                           questions=questions)
         except Exception as err:
@@ -135,7 +135,7 @@ class QuizHandlerView(APIView):
                 status.HTTP_400_BAD_REQUEST
             )
 
-        quiz_id = db.delete_quiz(quiz_id=quiz_id)
+        quiz_id = DB_CONN.delete_quiz(quiz_id=quiz_id)
 
         content = {'data': quiz_id}
         return Response(content, status.HTTP_200_OK)

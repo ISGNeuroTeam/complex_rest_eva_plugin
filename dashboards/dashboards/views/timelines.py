@@ -7,6 +7,7 @@ from ..settings import STATIC_CONF, MEM_CONF
 import uuid
 import super_logger
 
+
 class TimelinesView(APIView):
     """
     Returns a list of 4 timelines. Every timeline has 50 objects. One object is a pair (time, value) and represents

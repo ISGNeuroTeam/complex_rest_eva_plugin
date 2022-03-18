@@ -5,7 +5,7 @@ import super_logger
 import uuid
 import json
 
-from plugins.db_connector.connector_singleton import db
+from ..settings import DB_CONN
 
 
 class QuizQuestionsHandlerView(APIView):
@@ -33,7 +33,7 @@ class QuizQuestionsHandlerView(APIView):
         quiz_ids = [int(i) for i in quiz_ids if i]
 
         try:
-            questions = db.get_quiz_questions(quiz_ids=quiz_ids)
+            questions = DB_CONN.get_quiz_questions(quiz_ids=quiz_ids)
         except Exception as err:
             return Response(
                 json.dumps({'status': 'failed', 'error': str(err)}, default=str),
