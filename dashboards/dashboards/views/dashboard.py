@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from ..utils.ds_wrapper import DataSourceWrapper
+from ..utils.ds_wrapper import dswrapper
 
 
 class DashboardView(APIView):
@@ -11,15 +11,14 @@ class DashboardView(APIView):
     http_method_names = ['get', 'post', 'put', 'delete']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    dswrapper = DataSourceWrapper()
 
     def get(self, request):
         dash_id = request.GET.get('id', None)
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            dash = self.dswrapper.get_dashboard(dash_id)
-            all_groups = self.dswrapper.get_all_groups(names_only=True)
+            dash = dswrapper.get_dashboard(dash_id)
+            all_groups = dswrapper.get_all_groups(names_only=True)
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response(
@@ -34,7 +33,7 @@ class DashboardView(APIView):
         if not dash_name:
             return Response("params 'name' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            _id, modified = self.dswrapper.add_dashboard(dash_name, dash_body, dash_groups)
+            _id, modified = dswrapper.add_dashboard(dash_name, dash_body, dash_groups)
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response(
@@ -47,10 +46,10 @@ class DashboardView(APIView):
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            name, modified = self.dswrapper.update_dashboard(dash_id=dash_id,
-                                            name=request.data.get('name', None),
-                                            body=request.data.get('body', None),
-                                            groups=request.data.get('groups', None))
+            name, modified = dswrapper.update_dashboard(dash_id=dash_id,
+                                                        name=request.data.get('name', None),
+                                                        body=request.data.get('body', None),
+                                                        groups=request.data.get('groups', None))
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response(
@@ -62,7 +61,7 @@ class DashboardView(APIView):
         dash_id = request.data.get('id', None)
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
-        dash_id = self.dswrapper.delete_dashboard(dash_id)
+        dash_id = dswrapper.delete_dashboard(dash_id)
         return Response(
             {'id': dash_id},
             status.HTTP_200_OK

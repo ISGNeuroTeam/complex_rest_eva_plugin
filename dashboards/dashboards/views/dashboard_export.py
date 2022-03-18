@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from ..utils.data_uploader import DataUploader
+from ..utils.data_uploader import data_uploader
 from ..settings import STATIC_CONF
 
 
@@ -18,17 +18,16 @@ class DashboardExportView(APIView):
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
     static_conf = STATIC_CONF
-    data_uploader = DataUploader()
 
     def get(self, request):
         dash_ids = request.GET.get('ids', None)
         if not dash_ids:
             return Response("param 'ids' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            _dirname, archive_name = self.data_uploader.dash_export(dash_ids, STATIC_CONF)
+            _dirname, archive_name = data_uploader.dash_export(dash_ids, STATIC_CONF)
         except Exception as e:
             return Response(str(e), status.HTTP_409_CONFLICT)
         return Response(
-            f'{self.data_uploader.static_dir_name}/{_dirname}/{archive_name}',
+            f'{data_uploader.static_dir_name}/{_dirname}/{archive_name}',
             status.HTTP_200_OK
         )

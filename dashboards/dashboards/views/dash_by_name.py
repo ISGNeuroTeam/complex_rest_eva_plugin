@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from ..utils.ds_wrapper import DataSourceWrapper
+from ..utils.ds_wrapper import dswrapper
 
 
 class DashByNameView(APIView):
@@ -12,7 +12,6 @@ class DashByNameView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    dswrapper = DataSourceWrapper()
 
     def get(self, request):
         dash_name = request.GET.get('name', None)
@@ -22,7 +21,7 @@ class DashByNameView(APIView):
         if not dash_idgroup:
             return Response("param 'idgroup' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            dash = self.dswrapper.get_dashboard_by_name(dash_name, dash_idgroup)
+            dash = dswrapper.get_dashboard_by_name(dash_name, dash_idgroup)
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response({'data': dash}, status.HTTP_200_OK)

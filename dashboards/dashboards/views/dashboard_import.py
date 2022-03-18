@@ -1,10 +1,9 @@
-import json
 from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from ..utils.data_uploader import DataUploader
+from ..utils.data_uploader import data_uploader
 
 
 class DashboardImportView(APIView):
@@ -17,7 +16,6 @@ class DashboardImportView(APIView):
     http_method_names = ['post']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    data_uploader = DataUploader()
 
     def post(self, request):
         group = [request.data.get('group').encode()]
@@ -27,7 +25,7 @@ class DashboardImportView(APIView):
             return Response({'error': 'no file in payload'},
                             status.HTTP_204_NO_CONTENT)
         try:
-            self.data_uploader.dash_import(files, group)
+            data_uploader.dash_import(files, group)
         except Exception as err:
             return Response(str(err), status.HTTP_400_BAD_REQUEST)
         return Response({'status': 'success'}, status.HTTP_200_OK)

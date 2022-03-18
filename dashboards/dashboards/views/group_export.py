@@ -4,7 +4,7 @@ from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
 from ..settings import STATIC_CONF
-from ..utils.data_uploader import DataUploader
+from ..utils.data_uploader import data_uploader
 
 
 class GroupExportView(APIView):
@@ -17,14 +17,13 @@ class GroupExportView(APIView):
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
-    data_uploader = DataUploader()
 
     def get(self, request):
         group_ids = request.GET.get('ids', None)
         if not group_ids:
             return Response("param 'ids' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            _dirname, archive_name = self.data_uploader.group_export(group_ids, STATIC_CONF['static_path'])
+            _dirname, archive_name = data_uploader.group_export(group_ids, STATIC_CONF['static_path'])
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
-        return Response(f'{self.data_uploader.static_dir_name}/{_dirname}/{archive_name}', status.HTTP_200_OK)
+        return Response(f'{data_uploader.static_dir_name}/{_dirname}/{archive_name}', status.HTTP_200_OK)

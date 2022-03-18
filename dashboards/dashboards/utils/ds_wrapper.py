@@ -51,3 +51,6 @@ class DataSourceWrapper:
     @staticmethod
     def get_all_groups(names_only):
         return db.get_groups_data(names_only=names_only)
+
+
+dswrapper = DataSourceWrapper()

@@ -5,7 +5,7 @@ import tempfile
 from datetime import datetime
 import uuid
 import json
-from ..utils.ds_wrapper import DataSourceWrapper
+from ..utils.ds_wrapper import dswrapper
 from hashlib import blake2b
 
 
@@ -14,7 +14,6 @@ class DataUploader:
     For now a layer to work with fs
     """
 
-    dswrapper = DataSourceWrapper()
     static_dir_name = 'storage'
     log_dir_name = 'cli_logs'
 
@@ -39,14 +38,16 @@ class DataUploader:
             with open(saving_full_path, 'wb') as f:
                 f.write(_file.read())
 
-    def _add_group_metadata(self, path_template, gid, archive):
+    @staticmethod
+    def _add_group_metadata(path_template, gid, archive):
         meta_filemath = path_template.format('_META')
         with open(meta_filemath, 'w+') as f:
-            group_metadata = self.dswrapper.get_group(gid)
+            group_metadata = dswrapper.get_group(gid)
             f.write(json.dumps(group_metadata))
         archive.add(meta_filemath, os.path.join(str(gid), '_META'))
 
-    def dash_import(self, files, group):
+    @staticmethod
+    def dash_import(files, group):
         tar_file = dict(files)['body'][0]
 
         # wraps bytes to work with it like with file
@@ -55,11 +56,12 @@ class DataUploader:
             dtn = datetime.now().strftime('%Y%m%d%H%M%S')
             for dash in tar.getmembers():
                 dash_data = tar.extractfile(dash)
-                self.dswrapper.add_dashboard(name=f'{dash.name}_imported_{dtn}',
-                                             body=dash_data.read().decode(),
-                                             groups=[group[0].decode()])
+                dswrapper.add_dashboard(name=f'{dash.name}_imported_{dtn}',
+                                        body=dash_data.read().decode(),
+                                        groups=[group[0].decode()])
 
-    def group_import(self, files):
+    @staticmethod
+    def group_import(files):
         """adds dashboards to db"""
         tar_file = dict(files)['body'][0]
 
@@ -74,14 +76,14 @@ class DataUploader:
                 meta_data = tar.extractfile(meta)
                 meta_dict = json.loads(meta_data.read())
                 group_name = f"{meta_dict['name']}_imported_{dtn}"
-                self.dswrapper.add_group(name=group_name,
-                                         color=meta_dict['color'])
+                dswrapper.add_group(name=group_name,
+                                    color=meta_dict['color'])
                 dashes = [s for s in inner_objects if s.startswith(f"{meta_dict['id']}/")
                           and '_META' not in s]
                 for dash in dashes:
                     dash_name = dash.split('/', 1)[-1]
                     dash_data = tar.extractfile(dash)
-                    self.dswrapper.add_dashboard(name=f'{dash_name}_imported_{dtn}',
+                    dswrapper.add_dashboard(name=f'{dash_name}_imported_{dtn}',
                                                  body=dash_data.read().decode(),
                                                  groups=[group_name])
 
@@ -99,7 +101,7 @@ class DataUploader:
             archive_path = os.path.join(_base_path, archive_name)
             with tarfile.open(archive_path, mode='x:gz') as archive:
                 for did in dash_ids:
-                    dash_data = self.dswrapper.get_dashboard(dash_id=did)
+                    dash_data = dswrapper.get_dashboard(dash_id=did)
                     path_template = os.path.join(tmp_dir, '{}.json')
                     filename = make_unique_name(path_template, dash_data['name'])
                     filepath = path_template.format(filename)
@@ -126,7 +128,7 @@ class DataUploader:
             archive_path = os.path.join(_base_path, archive_name)
             with tarfile.open(archive_path, mode='x:gz') as archive:
                 for gid in group_ids:
-                    dashes_data = self.dswrapper.get_dashboards(group_id=gid)
+                    dashes_data = dswrapper.get_dashboards(group_id=gid)
                     group_dir = os.path.join(tmp_dir, str(gid))
                     if not os.path.exists(group_dir):
                         os.makedirs(group_dir)
@@ -143,3 +145,6 @@ class DataUploader:
                     # adds group metadata for future import
                     self._add_group_metadata(path_template, gid, archive)
         return _dirname, archive_name
+
+
+data_uploader = DataUploader()
