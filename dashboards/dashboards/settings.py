@@ -26,6 +26,7 @@ ot_simple_rest_conf.read(os.path.join(basedir, 'dashboards.conf'))
 
 
 STATIC_CONF = dict(ot_simple_rest_conf['static'])
+MEM_CONF = dict(ot_simple_rest_conf['mem_conf'])
 LOGS_PATH = dict(ot_simple_rest_conf['general']).get('logs_path', '.')
 config_parser = configparser.ConfigParser()
 

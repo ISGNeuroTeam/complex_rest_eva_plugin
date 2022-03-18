@@ -3,11 +3,9 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 from ..utils.timelines_builder import TimelinesBuilder
 from ..utils.timelines_loader import TimelinesLoader
-from typing import Dict
+from ..settings import STATIC_CONF, MEM_CONF
 import uuid
 import super_logger
-import json
-
 
 class TimelinesView(APIView):
     """
@@ -28,10 +26,10 @@ class TimelinesView(APIView):
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('dashboards')
 
-    def __init__(self, mem_conf: Dict, static_conf: Dict, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self):
+        super().__init__()
         self.builder = TimelinesBuilder()
-        self.loader = TimelinesLoader(mem_conf, static_conf, self.builder.BIGGEST_INTERVAL)
+        self.loader = TimelinesLoader(MEM_CONF, STATIC_CONF, self.builder.BIGGEST_INTERVAL)
 
     def get(self, request):
         cid = dict(request.GET).get('cid')
@@ -43,10 +41,10 @@ class TimelinesView(APIView):
             timelines = self.builder.get_all_timelines(data)
         except Exception as e:
             return Response(
-                json.dumps({'status': 'failed', 'error': f'{e} cid {cid}'}, default=str),
+                {"status": "failed", "error": f"{e} cid {cid}"},
                 status.HTTP_400_BAD_REQUEST
             )
         return Response(
-            json.dumps(timelines),
+            timelines,
             status.HTTP_200_OK
         )

@@ -22,3 +22,6 @@ static_path = /opt/otp/static/
 
 [general]
 logs_path = .
+
+[mem_conf]
+path = /opt/otp/caches/
