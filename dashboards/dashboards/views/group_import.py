@@ -6,10 +6,11 @@ import super_logger
 from ..utils.data_uploader import data_uploader
 
 
-class DashboardImportView(APIView):
+class GroupImportView(APIView):
     """
-    View to import dashs, exported with DashExportHandler.
-    Or you can put your own 'eva.dash' file with inner dashs json files.
+    View to import groups, exported with GroupExportHandler.
+    Or you can put your own 'eva.group' file with dirs named group_id
+    with inner dashes json files.
     """
 
     permission_classes = (IsAuthenticated,)
@@ -18,14 +19,11 @@ class DashboardImportView(APIView):
     logger = super_logger.getLogger('dashboards')
 
     def post(self, request):
-        group = [request.data.get('group').encode()]
         files = request.FILES
-
         if not files or not files.get('body'):
-            return Response({'error': 'no file in payload'},
-                            status.HTTP_204_NO_CONTENT)
+            return Response({'error': 'no file in payload'}, status.HTTP_204_NO_CONTENT)
         try:
-            data_uploader.dash_import(files, group)
+            data_uploader.group_import(files)
         except Exception as err:
-            return Response(str(err), status.HTTP_400_BAD_REQUEST)
-        return Response({'status': 'success'}, status.HTTP_200_OK)
+            return Response({'error': str(err)}, status.HTTP_400_BAD_REQUEST)
+        return Response({'status': 'success'})

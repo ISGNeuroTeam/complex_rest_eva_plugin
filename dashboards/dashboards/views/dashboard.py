@@ -3,8 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import super_logger
-from plugins.db_connector.connector_singleton import db
-import json
+from ..utils.ds_wrapper import dswrapper
 
 
 class DashboardView(APIView):
@@ -18,12 +17,12 @@ class DashboardView(APIView):
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            dash = db.get_dash_data(dash_id=dash_id)
+            dash = dswrapper.get_dashboard(dash_id)
+            all_groups = dswrapper.get_all_groups(names_only=True)
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
-        all_groups = db.get_groups_data(names_only=True)
         return Response(
-            json.dumps({'data': dash, 'groups': all_groups}),
+            {'data': dash, 'groups': all_groups},
             status.HTTP_200_OK
         )
 
@@ -34,13 +33,11 @@ class DashboardView(APIView):
         if not dash_name:
             return Response("params 'name' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            _id, modified = db.add_dash(name=dash_name,
-                                        body=dash_body,
-                                        groups=dash_groups)
+            _id, modified = dswrapper.add_dashboard(dash_name, dash_body, dash_groups)
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response(
-            json.dumps({'id': _id, 'modified': modified}),
+            {'id': _id, 'modified': modified},
             status.HTTP_200_OK
         )
 
@@ -49,23 +46,23 @@ class DashboardView(APIView):
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
         try:
-            name, modified = db.update_dash(dash_id=dash_id,
-                                            name=request.data.get('name', None),
-                                            body=request.data.get('body', None),
-                                            groups=request.data.get('groups', None))
+            name, modified = dswrapper.update_dashboard(dash_id=dash_id,
+                                                        name=request.data.get('name', None),
+                                                        body=request.data.get('body', None),
+                                                        groups=request.data.get('groups', None))
         except Exception as err:
             return Response(str(err), status.HTTP_409_CONFLICT)
         return Response(
-            json.dumps({'id': dash_id, 'name': name, 'modified': modified}),
+            {'id': dash_id, 'name': name, 'modified': modified},
             status.HTTP_200_OK
         )
 
     def delete(self, request):
-        dash_id = request.get_argument('id', None)
+        dash_id = request.data.get('id', None)
         if not dash_id:
             return Response("param 'id' is needed", status.HTTP_400_BAD_REQUEST)
-        dash_id = db.delete_dash(dash_id=dash_id)
+        dash_id = dswrapper.delete_dashboard(dash_id)
         return Response(
-            json.dumps({'id': dash_id}),
+            {'id': dash_id},
             status.HTTP_200_OK
         )
