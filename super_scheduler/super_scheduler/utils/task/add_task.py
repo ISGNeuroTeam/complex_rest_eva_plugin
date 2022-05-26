@@ -54,8 +54,8 @@ class AddPeriodicTask(KwargsParser):
 
         # нужно что-то более оптимизированное и лаконичное
         # не удается получить доступ ко внутреннему классу Meta, у которого есть название типа расписания
-        for key, val in SCHEDULES.items():
-            if issubclass(type(schedule), val):
+        for key, (schedule_class, schedule_format) in SCHEDULES.items():
+            if issubclass(type(schedule), schedule_class):
                 return key, None
 
         return None, "Not correct schedule name in 'SCHEDULES'"

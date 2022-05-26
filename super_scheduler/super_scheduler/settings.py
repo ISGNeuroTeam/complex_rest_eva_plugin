@@ -27,6 +27,8 @@ config_parser.read(Path(__file__).parent / 'super_scheduler.conf')
 
 ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 
+# AUTO_DELETE_SCHEDULES
+
 
 CELERY_BEAT_SCHEDULE = {
     "sample_task": {

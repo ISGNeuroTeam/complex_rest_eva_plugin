@@ -17,7 +17,7 @@ class ScheduleCreateFormat(BaseParserFormat):
         Check duplicated names in django database.
         """
         if value not in SCHEDULES:
-            raise ValueError(f"Not exist schedule with name {value}")
+            raise ValueError(f"Not exist schedule with name: {value}")
         return value
 
 

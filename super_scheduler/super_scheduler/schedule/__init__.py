@@ -10,3 +10,11 @@ SCHEDULES = {
     'solar': (SolarDjangoSchedule, SolarFormat),
     'clocked': (ClockedDjangoSchedule, ClockedFormat),
 }
+
+
+def schedule_name2class(name: str):
+    return SCHEDULES[name][0]
+
+
+def schedule_name2format(name: str):
+    return SCHEDULES[name][1]

@@ -1,4 +1,5 @@
 from rest_framework.request import Request
+from typing import Union, Tuple, Optional
 import super_logger
 import uuid
 
@@ -20,20 +21,37 @@ class TaskView(APIView):
     handler_id = str(uuid.uuid4())
     logger = super_logger.getLogger('super_scheduler')
 
+    def _validate_request_format(self, request_dict: dict, necessary_params: Union[tuple, list, set]) -> \
+            Tuple[bool, Optional[str]]:
+        """
+
+        :param request_dict:
+        :param necessary_params:
+        :return:
+        """
+        for param in necessary_params:
+            if param not in request_dict:
+                msg_error = "Not valid format; " \
+                            "waited: {}".format({param_: {} for param_ in necessary_params}) + \
+                            "got: {}".format(request_dict)
+                return False, msg_error
+        return True, None
+
     def post(self, request: Request) -> Response:
 
         req_params = dict(request.data)
 
-        if 'schedule' not in req_params or 'task' not in req_params:
-            msg_error = "Not valid format; " \
-                        "waited: {'task': {...}, 'schedule': {...}}; " \
-                        f"got: {req_params}"
+        # validate format
+        status_format, msg_error = self._validate_request_format(req_params, ('task', 'schedule'))
+        if status_format is False:
             return Response(data=msg_error, status=status.HTTP_400_BAD_REQUEST)
 
+        # create schedule
         schedule, msg_error = AddSchedule.create(req_params['schedule'])
         if schedule is None:
             return Response(data=msg_error, status=status.HTTP_400_BAD_REQUEST)
 
+        # create task
         status_task, msg_error = AddPeriodicTask.create(schedule=schedule, task_kwargs=req_params['task'])
         if status_task is False:
             return Response(data=msg_error, status=status.HTTP_400_BAD_REQUEST)
@@ -53,12 +71,12 @@ class TaskView(APIView):
 
         req_params = dict(request.data)
 
-        if 'task' not in req_params or 'name' not in req_params['task']:
-            msg_error = "Not valid format; " \
-                        "waited: {'task': {'name': 'taskname', ...}, ...}; "\
-                        f"got: {req_params}"
+        # validate format
+        status_format, msg_error = self._validate_request_format(req_params, ('task',))
+        if status_format is False:
             return Response(data=msg_error, status=status.HTTP_400_BAD_REQUEST)
 
+        # delete task
         status_task, msg_error = DelPeriodicTask.delete(req_params['task'])
         if status_task is False:
             return Response(data=msg_error, status=status.HTTP_400_BAD_REQUEST)
@@ -67,6 +85,7 @@ class TaskView(APIView):
         return Response(data=data, status=status.HTTP_200_OK)
 
     def get(self, request: Request) -> Response:
+
         data = {
             'tasks': get_all_task_names(),
             'periodic_tasks': get_all_periodic_task_names(),
