@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 from core.settings.ini_config import merge_ini_config_with_defaults
-from core.celeryapp import app
+
 
 default_ini_config = {
     'logging': {
