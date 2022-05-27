@@ -1,10 +1,10 @@
-from django_celery_beat.models import PeriodicTask, ClockedSchedule
+from django_celery_beat.models import PeriodicTask
 from typing import Optional, Tuple
 from pydantic import validator
 
 from plugins.super_scheduler.utils.kwargs_parser import KwargsParser, BaseFormat as BaseTaskFormat
+from plugins.super_scheduler.utils.schedule.get_schedule import get_schedule_name_from_task
 from plugins.super_scheduler.utils.task.get_task import get_all_periodic_task_names, get_all_periodic_tasks
-from plugins.super_scheduler.schedule import SCHEDULES, schedule_name2class
 from plugins.super_scheduler.utils.schedule.del_schedule import DelSchedule
 
 
@@ -17,42 +17,21 @@ class TaskDeleteFormat(BaseTaskFormat):
         return value
 
 
+def check_schedule_in_another_tasks(schedule_sublass, task_name: str = None) -> bool:
+    """
+
+    :param schedule_sublass:
+    :param task_name:
+    :return:
+    """
+    for task_iter in get_all_periodic_tasks():
+        if (task_iter.schedule == schedule_sublass) and \
+                ((task_name is None) or (task_name and task_iter.name != task_name)):
+            return True
+    return False
+
+
 class DelPeriodicTask(KwargsParser):
-
-    @classmethod
-    def _check_schedule_in_another_tasks(cls, task: PeriodicTask) -> bool:
-        """
-
-        :param task:
-        :return:
-        """
-        for task_iter in get_all_periodic_tasks():
-            if task_iter.name != task.name and task_iter.schedule == task.schedule:
-                return True
-        return False
-
-    @classmethod
-    def _get_schedule_name_from_task(cls, task: PeriodicTask):
-        """
-
-        :param task: PeriodicTask object
-        :return: schedule class (django model)
-        """
-        # similar to PeriodicTask.schedule because this method returns string interpretation, not schedule classes!
-        if task.crontab:
-            schedule_name = 'crontab'
-        elif task.interval:
-            schedule_name = 'interval'
-        elif task.solar:
-            schedule_name = 'solar'
-        elif task.clocked:
-            schedule_name = 'clocked'
-        else:
-            raise ValueError("No schedule in 'task'. Check 'SCHEDULES' variable and 'PeriodicTask.schedule' method.")
-
-        assert schedule_name in SCHEDULES, ValueError(f"{schedule_name} not in 'SCHEDULES'")
-
-        return schedule_name
 
     @classmethod
     def _delete_unused_schedule(cls, task: PeriodicTask) -> Tuple[bool, Optional[str]]:
@@ -62,9 +41,9 @@ class DelPeriodicTask(KwargsParser):
         :param task: PeriodicTask object
         :returns:
         """
-        name = cls._get_schedule_name_from_task(task)
+        name = get_schedule_name_from_task(task)
         schedule_subclass = task.schedule
-        status_schedule, msg = DelSchedule.delete({'name': name, 'schedule_subclass': schedule_subclass})
+        status_schedule, msg = DelSchedule.delete_by_schedule_subclass(name, schedule_subclass)
         return status_schedule, msg
 
     @classmethod
@@ -84,7 +63,7 @@ class DelPeriodicTask(KwargsParser):
             **task_kwargs
         )
 
-        if not cls._check_schedule_in_another_tasks(task):
+        if not check_schedule_in_another_tasks(task.schedule, task.name):
             # task will be delete if delete schedule
             return cls._delete_unused_schedule(task)
         else:

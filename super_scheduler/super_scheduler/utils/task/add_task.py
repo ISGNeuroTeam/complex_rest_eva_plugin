@@ -4,6 +4,7 @@ from pydantic import validator
 
 from plugins.super_scheduler.utils.kwargs_parser import KwargsParser, BaseFormat as BaseParserFormat
 from plugins.super_scheduler.utils.task.get_task import get_all_periodic_task_names, get_all_task_names
+from plugins.super_scheduler.utils.schedule.get_schedule import get_schedule_name_by_schedule_class
 from plugins.super_scheduler.schedule import SCHEDULES
 
 
@@ -19,10 +20,10 @@ class TaskCreateFormat(BaseParserFormat):
     @validator('name')
     def name_validator(cls, value: str) -> str:
         """
-        Check duplicated names in django database.
+        Check duplicate periodic task name in django database.
 
-        :param value:
-        :return:
+        :param value: unique task name
+        :return: this value
         """
         if value in get_all_periodic_task_names():
             raise ValueError("Duplicate periodic task name")
@@ -51,21 +52,17 @@ class AddPeriodicTask(KwargsParser):
         :param schedule: schedule class from super_scheduler.schedule.SCHEDULES global variable
         :return: schedule name & None | None & msg error
         """
-
-        # нужно что-то более оптимизированное и лаконичное
-        # не удается получить доступ ко внутреннему классу Meta, у которого есть название типа расписания
-        for key, (schedule_class, schedule_format) in SCHEDULES.items():
-            if issubclass(type(schedule), schedule_class):
-                return key, None
-
-        return None, "Not correct schedule name in 'SCHEDULES'"
+        schedule_name = get_schedule_name_by_schedule_class(schedule)
+        if schedule is None:
+            return None, "Not correct schedule name in 'SCHEDULES'"
+        return schedule_name, None
 
     @classmethod
     def create(cls, schedule, task_kwargs: dict) -> Tuple[bool, Optional[str]]:
         """
         Add periodic task to django database.
 
-        :param schedule: schedule class from super_scheduler.schedule.SCHEDULES global variable
+        :param schedule: schedule class from super_scheduler.schedule.SCHEDULES
         :param task_kwargs: task kwargs
         :return: status & optional error msg
         """

@@ -1,14 +1,13 @@
 from django_celery_beat.models import PeriodicTask
-from django_celery_beat.managers import ExtendedQuerySet
 
 from core.celeryapp import app
 
 
-def get_all_periodic_tasks() -> ExtendedQuerySet:
+def get_all_periodic_tasks() -> set:
     """
     Return all periodic tasks from django model.
     """
-    return PeriodicTask.objects.all()
+    return set(PeriodicTask.objects.all())
 
 
 def get_all_periodic_task_names() -> list:
