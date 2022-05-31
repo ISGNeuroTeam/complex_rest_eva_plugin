@@ -13,8 +13,14 @@ SCHEDULES = {
 
 
 def schedule_name2class(name: str):
+    """
+    Schedule type to schedule class.
+    """
     return SCHEDULES[name][0]
 
 
 def schedule_name2format(name: str):
+    """
+    Schedule type to schedule format.
+    """
     return SCHEDULES[name][1]

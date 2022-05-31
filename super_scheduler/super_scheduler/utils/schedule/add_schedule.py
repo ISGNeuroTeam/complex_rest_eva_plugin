@@ -1,5 +1,4 @@
-from django_celery_beat.models import PeriodicTask
-from typing import Tuple, Optional, Union
+from typing import Tuple, Optional
 from pydantic import validator
 
 from plugins.super_scheduler.schedule import SCHEDULES
@@ -24,7 +23,13 @@ class ScheduleCreateFormat(BaseParserFormat):
 class AddSchedule(KwargsParser):
 
     @classmethod
-    def _get_schedule_main_params(cls, schedule_name_dict: dict):
+    def _get_schedule_main_params(cls, schedule_name_dict: dict) -> tuple:
+        """
+        Get schedule_name_dict with 'name' key and return schedules class with kwargs format.
+
+        :param schedule_name_dict:
+        :return: schedule class & schedule format
+        """
         schedule_name = schedule_name_dict['name']
         schedule_class, schedule_format = SCHEDULES[schedule_name]
         return schedule_class, schedule_format

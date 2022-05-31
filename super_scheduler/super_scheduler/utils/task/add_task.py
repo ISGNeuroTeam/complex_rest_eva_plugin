@@ -5,11 +5,11 @@ from pydantic import validator
 from plugins.super_scheduler.utils.kwargs_parser import KwargsParser, BaseFormat as BaseParserFormat
 from plugins.super_scheduler.utils.task.get_task import get_all_periodic_task_names, get_all_task_names
 from plugins.super_scheduler.utils.schedule.get_schedule import get_schedule_name_by_schedule_class
-from plugins.super_scheduler.schedule import SCHEDULES
 
 
 class TaskCreateFormat(BaseParserFormat):
     """
+    Task create format.
     See PeriodicTask doc for additional args.
     """
     task: str
@@ -21,9 +21,6 @@ class TaskCreateFormat(BaseParserFormat):
     def name_validator(cls, value: str) -> str:
         """
         Check duplicate periodic task name in django database.
-
-        :param value: unique task name
-        :return: this value
         """
         if value in get_all_periodic_task_names():
             raise ValueError("Duplicate periodic task name")
@@ -33,9 +30,6 @@ class TaskCreateFormat(BaseParserFormat):
     def task_exist(cls, value: str) -> str:
         """
         Check exist task.
-
-        :param value:
-        :return:
         """
         if value not in get_all_task_names():
             raise ValueError("Not exist task name")
@@ -64,7 +58,7 @@ class AddPeriodicTask(KwargsParser):
 
         :param schedule: schedule class from super_scheduler.schedule.SCHEDULES
         :param task_kwargs: task kwargs
-        :return: status & optional error msg
+        :return: success status & optional error msg
         """
 
         task_kwargs, msg = cls.parse_kwargs(task_kwargs, TaskCreateFormat)

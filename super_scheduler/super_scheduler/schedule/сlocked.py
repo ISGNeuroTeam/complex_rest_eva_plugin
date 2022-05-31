@@ -1,7 +1,6 @@
 from django_celery_beat.models import ClockedSchedule
 from pydantic import validator
 
-from datetime import datetime
 from dateutil.parser import parse
 from dateutil.tz import gettz
 
@@ -15,6 +14,9 @@ class ClockedFormat(BaseScheduleFormat):
 
     @validator("clocked_time")
     def clocked_time_transformer(cls, value):
+        """
+        Transform string to datetime.
+        """
         try:
             tzinfo = gettz(TIME_ZONE)
             value = parse(value, tzinfos={"PST": tzinfo, "PDT": tzinfo})
