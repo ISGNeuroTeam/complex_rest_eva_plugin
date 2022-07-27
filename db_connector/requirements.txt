@@ -1,6 +1,0 @@
-cache==1.0.3
-psycopg2==2.9.3
-psycopg2_binary==2.9.2
-super_logger==0.1.4
---extra-index-url http://s.dev.isgneuro.com/repository/ot.platform/simple
---trusted-host s.dev.isgneuro.com

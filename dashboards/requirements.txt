@@ -1,7 +1,0 @@
-Django==3.2.9
-file_read_backwards==2.0.0
-pandas==1.4.1
-python_dateutil==2.8.2
-super_logger==0.1.4
---extra-index-url http://s.dev.isgneuro.com/repository/ot.platform/simple
---trusted-host s.dev.isgneuro.com

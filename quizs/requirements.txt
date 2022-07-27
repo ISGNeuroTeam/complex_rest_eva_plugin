@@ -1,5 +1,0 @@
-Django==3.2.9
-openpyxl==3.0.9
-super_logger==0.1.4
---extra-index-url http://s.dev.isgneuro.com/repository/ot.platform/simple
---trusted-host s.dev.isgneuro.com
