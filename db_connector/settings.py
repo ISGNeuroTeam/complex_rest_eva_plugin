@@ -1,48 +1,41 @@
 import configparser
-from pathlib import Path
-from core.settings.ini_config import merge_ini_config_with_defaults
 import os
-from psycopg2.pool import ThreadedConnectionPool
+from pathlib import Path
+from core.settings.ini_config import merge_ini_config_with_defaults, configparser_to_dict
 
 default_ini_config = {
-    'logging': {
-        'level': 'INFO'
-    },
     'db_conf': {
         'host': 'localhost',
         'port': '5432',
-        'database':  'complex_rest_eva_plugin',
-        'user': 'complex_rest_eva_plugin',
-        'password': 'complex_rest_eva_plugin'
+        'database':  'eva',
+        'user': 'dispatcher',
+        'password': 'password'
     }
 }
 
-# # # # # #  Configuration section  # # # # # # #
+# try to read path to config from environment
+conf_path_env = os.environ.get('db_connector_conf', None)
+base_dir = Path(__file__).resolve().parent
+if conf_path_env is None:
+    conf_path = base_dir / 'db_connector.conf'
+else:
+    conf_path = Path(conf_path_env).resolve()
 
-basedir = os.path.dirname(os.path.abspath(__file__))
+config = configparser.ConfigParser()
 
-ot_simple_rest_conf = configparser.ConfigParser()
-ot_simple_rest_conf.read(os.path.join(basedir, 'db_connector.conf'))
+config.read(conf_path)
 
-db_conf = dict(ot_simple_rest_conf['db_conf_eva'])
-pool_conf = dict(ot_simple_rest_conf['db_pool_conf'])
+config = configparser_to_dict(config)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # #
+ini_config = merge_ini_config_with_defaults(config, default_ini_config)
 
-DB_POOL = ThreadedConnectionPool(int(pool_conf['min_size']), int(pool_conf['max_size']), **db_conf)
-
-config_parser = configparser.ConfigParser()
-
-config_parser.read(Path(__file__).parent / 'db_connector.conf')
-
-ini_config = merge_ini_config_with_defaults(config_parser, default_ini_config)
 
 # configure your own database if you need
-# DATABASE = {
-#         "ENGINE": 'django.db.backends.postgresql',
-#         "NAME": ini_config['db_conf']['database'],
-#         "USER": ini_config['db_conf']['user'],
-#         "PASSWORD": ini_config['db_conf']['password'],
-#         "HOST": ini_config['db_conf']['host'],
-#         "PORT": ini_config['db_conf']['port']
-# }
+DATABASE = {
+        "ENGINE": 'django.db.backends.postgresql',
+        "NAME": ini_config['db_conf']['database'],
+        "USER": ini_config['db_conf']['user'],
+        "PASSWORD": ini_config['db_conf']['password'],
+        "HOST": ini_config['db_conf']['host'],
+        "PORT": ini_config['db_conf']['port']
+}

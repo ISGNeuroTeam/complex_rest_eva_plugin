@@ -1,13 +1,3 @@
-[logging]
-separate_logs = DEBUG
-common_logs = ERROR
-
-[logger1]
-type = JSON
-level = INFO
-rotation = true
-flatten = true
-
 [static]
 use_nginx = True
 base_url = cache/{}

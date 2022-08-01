@@ -1,19 +1,6 @@
-[logging]
-separate_logs = DEBUG
-common_logs = ERROR
-
-[logger1]
-type = JSON
-level = INFO
-rotation = true
-flatten = true
-
-[db_conf_eva]
+[db_conf]
 host = localhost
 database = eva
 user = dispatcher
 password = password
 
-[db_pool_conf]
-min_size = 10
-max_size = 20
