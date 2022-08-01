@@ -2,7 +2,7 @@ from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
-import super_logger
+import logging
 from ..utils.data_uploader import data_uploader
 
 
@@ -16,7 +16,7 @@ class GroupImportView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('dashboards')
+    logger = logging.getLogger('dashboards')
 
     def post(self, request):
         files = request.FILES

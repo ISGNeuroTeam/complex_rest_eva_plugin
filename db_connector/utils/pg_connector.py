@@ -1,4 +1,4 @@
-import super_logger
+import logging
 from contextlib import contextmanager
 from typing import Any, Dict
 import psycopg2
@@ -36,7 +36,7 @@ class PGConnector:
 
     def __init__(self, conn_pool):
         self.pool = conn_pool
-        self.logger = super_logger.getLogger('db_connector')
+        self.logger = logging.getLogger('db_connector')
 
     @contextmanager
     def transaction(self, name="transaction", **kwargs):

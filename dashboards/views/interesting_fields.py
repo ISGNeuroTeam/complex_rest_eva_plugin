@@ -4,7 +4,7 @@ from rest.permissions import IsAuthenticated
 from ..utils.interesting_fields_builder import InterestingFieldsBuilder
 from ..utils.interesting_fields_loader import InterestingFieldsLoader
 import uuid
-import super_logger
+import logging
 from ..settings import STATIC_CONF, MEM_CONF
 
 
@@ -25,7 +25,7 @@ class InterestingFieldsView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('dashboards')
+    logger = logging.getLogger('dashboards')
 
     def __init__(self):
         super().__init__()

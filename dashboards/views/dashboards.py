@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAdminUser
 from ..utils.ds_wrapper import dswrapper
 import uuid
-import super_logger
+import logging
 
 
 class DashboardsView(APIView):
@@ -11,7 +11,7 @@ class DashboardsView(APIView):
     permission_classes = (IsAdminUser,)  # TODO if 'list_dashs' in self.permissions
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('dashboards')
+    logger = logging.getLogger('dashboards')
 
     def get(self, request):
         target_group_id = request.GET.get('id', None)

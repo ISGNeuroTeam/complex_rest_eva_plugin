@@ -2,7 +2,7 @@ from rest.views import APIView
 from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
-import super_logger
+import logging
 from ..utils.data_uploader import data_uploader
 from ..settings import STATIC_CONF
 
@@ -16,7 +16,7 @@ class DashboardExportView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('dashboards')
+    logger = logging.getLogger('dashboards')
     static_conf = STATIC_CONF
 
     def get(self, request):

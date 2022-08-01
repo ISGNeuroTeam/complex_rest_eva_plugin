@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.views import APIView
 from openpyxl import Workbook
 from datetime import datetime
-import super_logger
+import logging
 import tempfile
 import tarfile
 import uuid
@@ -23,7 +23,7 @@ class QuizExportJsonHandlerView(APIView):
     # permission_classes = (AllowAny,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('quizs')
+    logger = logging.getLogger('quizs')
 
     def _save_quiz2storage(self, quiz_ids):
 
@@ -91,7 +91,7 @@ class QuizImportJsonHandlerView(APIView):
     # permission_classes = (AllowAny,)
     http_method_names = ['post']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('quizs')
+    logger = logging.getLogger('quizs')
 
     @staticmethod
     def _process_tar_file(tar_file):
@@ -144,7 +144,7 @@ class FilledQuizExportHandlerView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
     handler_id = str(uuid.uuid4())
-    logger = super_logger.getLogger('quizs')
+    logger = logging.getLogger('quizs')
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

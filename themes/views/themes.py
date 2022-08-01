@@ -4,7 +4,7 @@ import uuid
 from rest.views import APIView
 from rest.response import Response, ErrorResponse, SuccessResponse, status
 from rest.permissions import IsAuthenticated, AllowAny
-import super_logger
+import logging
 
 from plugins.themes.utils.theme_manager import ThemeManager
 
@@ -12,7 +12,7 @@ from plugins.themes.utils.theme_manager import ThemeManager
 class ThemeListView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
-    logger = super_logger.getLogger('themes')
+    logger = logging.getLogger('themes')
 
     def get(self, request):
 
@@ -37,7 +37,7 @@ class ThemeListView(APIView):
 class ThemeGetView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['get']
-    logger = super_logger.getLogger('themes')
+    logger = logging.getLogger('themes')
 
     def get(self, request):
 
@@ -66,7 +66,7 @@ class ThemeGetView(APIView):
 class ThemeCreateView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['post']
-    logger = super_logger.getLogger('themes')
+    logger = logging.getLogger('themes')
 
     def post(self, request):
         theme_name = request.data.get('themeName', None)
@@ -93,7 +93,7 @@ class ThemeCreateView(APIView):
 class ThemeDeleteView(APIView):
     permission_classes = (IsAuthenticated,)
     http_method_names = ['delete']
-    logger = super_logger.getLogger('themes')
+    logger = logging.getLogger('themes')
 
     def delete(self, request):
         theme_name = request.data.get('themeName', None)
