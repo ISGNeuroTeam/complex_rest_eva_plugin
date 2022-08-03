@@ -1,11 +1,11 @@
 import os
-from ..utils.helper_functions import make_unique_name
+from .helper_functions import make_unique_name
 import tarfile
 import tempfile
 from datetime import datetime
 import uuid
 import json
-from ..utils.ds_wrapper import dswrapper
+from .ds_wrapper import dswrapper
 from hashlib import blake2b
 
 

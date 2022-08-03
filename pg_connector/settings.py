@@ -17,7 +17,7 @@ default_ini_config = {
 conf_path_env = os.environ.get('db_connector_conf', None)
 base_dir = Path(__file__).resolve().parent
 if conf_path_env is None:
-    conf_path = base_dir / 'db_connector.conf'
+    conf_path = base_dir / 'pg_connector.conf'
 else:
     conf_path = Path(conf_path_env).resolve()
 

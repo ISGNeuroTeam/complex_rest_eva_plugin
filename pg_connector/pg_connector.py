@@ -3,16 +3,17 @@ from contextlib import contextmanager
 from typing import Any, Dict
 import psycopg2
 from psycopg2.pool import PoolError
+from psycopg2.pool import SimpleConnectionPool
 from asyncio import sleep
+from ..settings import ini_config
 
-__author__ = "Anton Khromov"
-__copyright__ = "Copyright 2019, Open Technologies 98"
-__credits__ = []
-__license__ = ""
-__version__ = "0.0.1"
-__maintainer__ = "Andrey Starchenkov"
-__email__ = "akhromov@ot.ru"
-__status__ = "Production"
+
+def flat_to_set(arr):
+    return {i[0] for i in arr} if arr else set()
+
+
+def flat_to_list(arr):
+    return [i[0] for i in arr] if arr else list()
 
 
 class ObjectDict(Dict[str, Any]):
@@ -29,14 +30,22 @@ class ObjectDict(Dict[str, Any]):
         self[name] = value
 
 
-class PGConnector:
+class Singleton(type):
+    _instances = {}
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class PGConnector(metaclass=Singleton):
     """
-    Base Postgres connector class with no specific methods
+    Postgres connector class. Singleton. Makes query to database
     """
 
     def __init__(self, conn_pool):
-        self.pool = conn_pool
-        self.logger = logging.getLogger('db_connector')
+        self.pool = SimpleConnectionPool(1, 10, **ini_config['db_conf'])
+        self.logger = logging.getLogger('pg_connector')
 
     @contextmanager
     def transaction(self, name="transaction", **kwargs):

@@ -31,7 +31,7 @@ services:
     volumes:
       - ./dashboards:/complex_rest/plugins/dashboards
       - ./quizs:/complex_rest/plugins/quizs
-      - ./db_connector:/complex_rest/plugins/db_connector
+      - ./pg_connector:/complex_rest/plugins/pg_connector
       - ./themes:/complex_rest/plugins/themes
       - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
@@ -50,7 +50,7 @@ services:
     volumes:
       - ./dashboards:/complex_rest/plugins/dashboards
       - ./quizs:/complex_rest/plugins/quizs
-      - ./db_connector:/complex_rest/plugins/db_connector
+      - ./pg_connector:/complex_rest/plugins/pg_connector
       - ./themes:/complex_rest/plugins/themes
       - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
@@ -70,7 +70,7 @@ services:
     volumes:
       - ./dashboards:/complex_rest/plugins/dashboards
       - ./quizs:/complex_rest/plugins/quizs
-      - ./db_connector:/complex_rest/plugins/db_connector
+      - ./pg_connector:/complex_rest/plugins/pg_connector
       - ./themes:/complex_rest/plugins/themes
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
