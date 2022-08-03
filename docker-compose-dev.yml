@@ -35,10 +35,7 @@ services:
       dockerfile: ./docs/docker/complex_rest/Dockerfile
     image: "complex_rest_for_eva_plugin_celery:1.1.2"
     volumes:
-      - ./dashboards:/complex_rest/plugins/dashboards
-      - ./quizs:/complex_rest/plugins/quizs
-      - ./pg_connector:/complex_rest/plugins/pg_connector
-      - ./themes:/complex_rest/plugins/themes
+      - ./eva_plugin:/complex_rest/plugins/eva_plugin
       - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
 
@@ -54,10 +51,7 @@ services:
       dockerfile: ./docs/docker/complex_rest/Dockerfile
     image: "complex_rest_for_eva_plugin_celery:1.1.2"
     volumes:
-      - ./dashboards:/complex_rest/plugins/dashboards
-      - ./quizs:/complex_rest/plugins/quizs
-      - ./pg_connector:/complex_rest/plugins/pg_connector
-      - ./themes:/complex_rest/plugins/themes
+      - ./eva_plugin:/complex_rest/plugins/eva_plugin
       - ./logs:/complex_rest/logs
     user: ${CURRENT_UID}
 
@@ -74,10 +68,7 @@ services:
     image: "complex_rest_for_eva_plugin:1.1.2"
 
     volumes:
-      - ./dashboards:/complex_rest/plugins/dashboards
-      - ./quizs:/complex_rest/plugins/quizs
-      - ./pg_connector:/complex_rest/plugins/pg_connector
-      - ./themes:/complex_rest/plugins/themes
+      - ./eva_plugin:/complex_rest/plugins/eva_plugin
       - ./logs:/complex_rest/logs
       - ./tests:/complex_rest/tests
 

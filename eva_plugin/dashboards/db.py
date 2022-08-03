@@ -1,6 +1,4 @@
-from pg_connector import  PGConnector, flat_to_list, flat_to_set
-from copy import deepcopy
-
+from eva_plugin.pg_connector import  PGConnector, flat_to_list, flat_to_set
 
 
 class DatabaseConnector:

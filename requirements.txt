@@ -1,0 +1,5 @@
+file_read_backwards==2.0.0
+openpyxl==3.0.9
+pandas==1.4.1
+python_dateutil==2.8.2
+cache==1.0.3

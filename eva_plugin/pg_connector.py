@@ -5,7 +5,7 @@ import psycopg2
 from psycopg2.pool import PoolError
 from psycopg2.pool import SimpleConnectionPool
 from asyncio import sleep
-from ..settings import ini_config
+from eva_plugin.settings import ini_config
 
 
 def flat_to_set(arr):

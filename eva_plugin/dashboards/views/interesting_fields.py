@@ -5,7 +5,7 @@ from ..utils.interesting_fields_builder import InterestingFieldsBuilder
 from ..utils.interesting_fields_loader import InterestingFieldsLoader
 import uuid
 import logging
-from ..settings import STATIC_CONF, MEM_CONF
+from eva_plugin.settings import STATIC_CONF, MEM_CONF
 
 
 class InterestingFieldsView(APIView):

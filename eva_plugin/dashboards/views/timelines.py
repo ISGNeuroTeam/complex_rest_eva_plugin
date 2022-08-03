@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 from ..utils.timelines_builder import TimelinesBuilder
 from ..utils.timelines_loader import TimelinesLoader
-from ..settings import STATIC_CONF, MEM_CONF
+from eva_plugin.settings import STATIC_CONF, MEM_CONF
 import uuid
 import logging
 

@@ -4,7 +4,8 @@ from rest.permissions import IsAuthenticated
 import uuid
 import logging
 from ..utils.data_uploader import data_uploader
-from ..settings import STATIC_CONF
+from eva_plugin.settings import STATIC_CONF
+
 
 
 class DashboardExportView(APIView):

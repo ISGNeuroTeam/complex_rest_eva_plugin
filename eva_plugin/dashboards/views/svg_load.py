@@ -3,7 +3,7 @@ from rest.response import Response, status
 from rest.permissions import IsAuthenticated
 import uuid
 import logging
-from ..settings import STATIC_CONF
+from eva_plugin.settings import STATIC_CONF
 from ..utils.data_uploader import data_uploader
 
 

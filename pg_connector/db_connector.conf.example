@@ -1,6 +1,0 @@
-[db_conf]
-host = localhost
-database = eva
-user = dispatcher
-password = password
-

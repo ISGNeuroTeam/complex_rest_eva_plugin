@@ -1,3 +1,9 @@
+[db_conf]
+host = localhost
+database = eva
+user = dispatcher
+password = password
+
 [static]
 use_nginx = True
 base_url = cache/{}
@@ -8,3 +14,6 @@ logs_path = .
 
 [mem_conf]
 path = /opt/otp/caches/
+
+[file_upload]
+svg_path = /opt/otp/static/svg/

@@ -10,7 +10,7 @@ import uuid
 import json
 import os
 
-from ..settings import STATIC_CONF, DB_CONN
+from eva_plugin.settings import STATIC_CONF, DB_CONN
 
 
 class QuizExportJsonHandlerView(APIView):

@@ -14,9 +14,10 @@ Addition section:\n\
  venv\n\
 "
 
-VERSION := $(shell cat setup.py | grep version | head -n 1 | sed -re "s/[^\"']+//" | sed -re "s/[\"',]//g")
-BRANCH := $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | sed -re 's/^(remotes\/)?origin\///' | tr '/' '_')
-
+GENERATE_VERSION = $(shell cat setup.py | grep __version__ | head -n 1 | sed -re 's/[^"]+//' | sed -re 's/"//g' )
+GENERATE_BRANCH = $(shell git name-rev $$(git rev-parse HEAD) | cut -d\  -f2 | sed -re 's/^(remotes\/)?origin\///' | tr '/' '_')
+SET_VERSION = $(eval VERSION=$(GENERATE_VERSION))
+SET_BRANCH = $(eval BRANCH=$(GENERATE_BRANCH))
 
 define clean_docker_containers
 	@echo "Stopping and removing docker containers"
@@ -25,82 +26,55 @@ define clean_docker_containers
 endef
 
 pack: make_build
+	$(SET_VERSION)
+	$(SET_BRANCH)
 	rm -f eva_plugin-*.tar.gz
 	echo Create archive \"eva_plugin-$(VERSION)-$(BRANCH).tar.gz\"
-	cd make_build; tar czf ../eva_plugin-$(VERSION)-$(BRANCH).tar.gz dashboards themes quizs db_connector
-
+	cd make_build; tar czf ../eva_plugin-$(VERSION)-$(BRANCH).tar.gz eva_plugin
 
 clean_pack:
 	rm -f eva_plugin-*.tar.gz
+
 
 eva_plugin.tar.gz: build
 	cd make_build; tar czf ../eva_plugin.tar.gz eva_plugin && rm -rf ../make_build
 
 build: make_build
 
-make_build: make_build/dashboards make_build/quizs make_build/db_connector make_build/themes
+make_build: venv venv.tar.gz
+	# required section
+	echo make_build
+	mkdir make_build
 
-make_build/dashboards: venv_dashboards venv_dashboards.tar.gz
-	mkdir -p make_build
-	cp -R ./dashboards make_build
-	mv make_build/dashboards/dashboards.conf.example make_build/dashboards/dashboards.conf
-	mkdir make_build/dashboards/venv
-	tar -xzf ./venv_dashboards.tar.gz -C make_build/dashboards/venv
-
-make_build/themes:
-	mkdir -p make_build
-	cp -R ./themes make_build
-	mv make_build/themes/themes.conf.example make_build/themes/themes.conf
-
-make_build/db_connector: venv_db_connector.tar.gz
-	mkdir -p make_build
-	cp -R ./db_connector make_build
-	mv make_build/db_connector/db_connector.conf.example make_build/db_connector/db_connector.conf
-	mkdir make_build/db_connector/venv
-	tar -xzf ./venv_db_connector.tar.gz -C make_build/db_connector/venv
-
-make_build/quizs: venv_quizs.tar.gz
-	mkdir -p make_build
-	cp -R ./quizs make_build
-	mv make_build/quizs/quizs.conf.example make_build/quizs/quizs.conf
-	mkdir make_build/quizs/venv
-	tar -xzf ./venv_quizs.tar.gz -C make_build/quizs/venv
-
-
-venv_db_connector:
-	echo Create venv_db_connector
-	conda create --copy -p ./venv_db_connector -y
-	conda install -p ./venv_db_connector python==3.9.7 -y
-	./venv_db_connector/bin/pip install --no-input  -r requirements_db_connector.txt
-
-venv_quizs:
-	echo Create venv_quizs
-	conda create --copy -p ./venv_quizs -y
-	conda install -p ./venv_quizs python==3.9.7 -y
-	./venv_quizs/bin/pip install --no-input  -r requirements_quizs.txt
-
-venv_dashboards:
-	echo Create venv_dashboards
-	conda create --copy -p ./venv_dashboards -y
-	conda install -p ./venv_dashboards python==3.9.7 -y
-	./venv_dashboards/bin/pip install --no-input  -r requirements_dashboards.txt
-
-venv_dashboards.tar.gz: venv_dashboards
-	conda pack -p ./venv_dashboards -o ./venv_dashboards.tar.gz
-
-venv_quizs.tar.gz: venv_quizs
-	conda pack -p ./venv_quizs -o ./venv_quizs.tar.gz
-
-venv_db_connector.tar.gz: venv_db_connector
-	conda pack -p ./venv_db_connector -o ./venv_db_connector.tar.gz
-
-make_build: make_build/dashboards make_build/themes make_build db_connector make_build/quizs
+	cp -R ./eva_plugin make_build
+	mv make_build/eva_plugin/eva_plugin.conf.example make_build/eva_plugin/eva_plugin.conf
+	cp *.md make_build/eva_plugin/
+	cp *.py make_build/eva_plugin/
+	if [ -s requirements.txt ]; then \
+		mkdir make_build/eva_plugin/venv;\
+		tar -xzf ./venv.tar.gz -C make_build/eva_plugin/venv; \
+	fi
 
 clean_build:
 	rm -rf make_build
 
+venv:
+	if [ -s requirements.txt ]; then \
+		echo Create venv; \
+		conda create --copy -p ./venv -y; \
+		conda install -p ./venv python==3.9.7 -y; \
+		./venv/bin/pip install --no-input  -r requirements.txt; \
+	fi
+
+venv.tar.gz: venv
+	if [ -s requirements.txt ]; then \
+		conda pack -p ./venv -o ./venv.tar.gz; \
+	fi
+
 clean_venv:
-	rm -rf venv*
+	rm -rf venv
+	rm -f ./venv.tar.gz
+
 
 clean: clean_build clean_venv clean_pack clean_test
 
