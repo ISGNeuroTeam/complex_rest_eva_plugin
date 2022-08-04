@@ -20,9 +20,12 @@ RUN eval "$(ssh-agent -s)" && ssh-add /root/.ssh/id_rsa_plugin && git clone git@
 RUN chmod -R 0777 /complex_rest
 
 ADD ./docs/docker/db_connector.conf /complex_rest/complex_rest/db_connector.conf
+ADD ./requirements.txt /complex_rest/plugin_requirements.txt
 WORKDIR /complex_rest
 
 RUN pip install --no-cache-dir  -r requirements.txt
+RUN pip install --no-cache-dir  -r plugin_requirements.txt
+
 
 
 ENTRYPOINT ["/complex_rest/docs/docker_dev/complex_rest/entrypoint.sh"]
