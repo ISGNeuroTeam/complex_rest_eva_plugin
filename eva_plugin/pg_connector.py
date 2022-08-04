@@ -8,6 +8,10 @@ from asyncio import sleep
 from eva_plugin.settings import ini_config
 
 
+class QueryError(Exception):
+    pass
+
+
 def flat_to_set(arr):
     return {i[0] for i in arr} if arr else set()
 
@@ -30,6 +34,14 @@ class ObjectDict(Dict[str, Any]):
         self[name] = value
 
 
+def row_to_obj(row, cur):
+    """Convert a SQL row to an object supporting dict and attribute access."""
+    obj = ObjectDict()
+    for val, desc in zip(row, cur.description):
+        obj[desc.name] = val
+    return obj
+
+
 class Singleton(type):
     _instances = {}
     def __call__(cls, *args, **kwargs):
@@ -43,7 +55,7 @@ class PGConnector(metaclass=Singleton):
     Postgres connector class. Singleton. Makes query to database
     """
 
-    def __init__(self, conn_pool):
+    def __init__(self):
         self.pool = SimpleConnectionPool(1, 10, **ini_config['db_conf'])
         self.logger = logging.getLogger('pg_connector')
 
@@ -74,12 +86,6 @@ class PGConnector(metaclass=Singleton):
             conn.reset()
             self.pool.putconn(conn)
 
-    def row_to_obj(self, row, cur):
-        """Convert a SQL row to an object supporting dict and attribute access."""
-        obj = ObjectDict()
-        for val, desc in zip(row, cur.description):
-            obj[desc.name] = val
-        return obj
 
     def execute_query(self, query, conn=None, params=None, with_commit=False,
                       with_fetch=True, as_obj=False, fetchall=False):
