@@ -62,7 +62,7 @@ class DataUploader:
 
     @staticmethod
     def group_import(files):
-        """adds dashboards to db"""
+        """adds dashs to db"""
         tar_file = dict(files)['body'][0]
 
         # wraps bytes to work with it like with file

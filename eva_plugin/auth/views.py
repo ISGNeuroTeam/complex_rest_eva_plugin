@@ -6,7 +6,9 @@ import bcrypt
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework.response import Response
 
+
 from eva_plugin.base_handler import BaseHandler
+
 from .db import db
 
 
@@ -14,6 +16,28 @@ logger = logging.getLogger('eva_plugin')
 
 
 class AuthLoginHandler(BaseHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        """
+        Gets config and init logger.
+
+        :param db_conn_pool: Postgres DB connection pool object.
+        :return:
+        """
+        self.handler_id = str(uuid.uuid4())
+        self.logger = logging.getLogger('eva_plugin')
+        self.permissions = None
+        self.data = None
+        self.token = None
+        self.GET = None
+        self.cookie = None
+
+        self.current_user = None
+
+    def initial(self, request, *args, **kwargs):
+        super(BaseHandler, self).initial(request, *args, **kwargs)
+        self._set_request_params(request)
+
 
     def post(self, request):
         user = db.check_user_exists(self.data.get("username"))
@@ -27,8 +51,8 @@ class AuthLoginHandler(BaseHandler):
         if not password_equal:
             raise ValidationError(400, "incorrect password")
 
-        user_tokens = self.db.get_user_tokens(user.id)
-        client_token = self.get_cookie('eva_token')
+        user_tokens = db.get_user_tokens(user.id)
+        client_token = request.COOKIES.get('eva_token', None)
 
         response = Response({'status': 'success'})
 

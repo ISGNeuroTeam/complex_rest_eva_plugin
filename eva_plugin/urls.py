@@ -1,8 +1,9 @@
-from django.urls import path, include
+from django.urls import re_path, include
+
+from eva_plugin.auth.views import AuthLoginHandler
+from eva_plugin.dashs.urls import urlpatterns as dash_urlpatterns
 
 
 urlpatterns = [
-    path('dashboards/', include('eva_plugin.dashboards.urls')),
-    path('quizs/', include('eva_plugin.quizs.urls')),
-    path('themes/', include('eva_plugin.themes.urls'))
-]
+    re_path(r'auth/login/?', AuthLoginHandler.as_view()),
+] + dash_urlpatterns

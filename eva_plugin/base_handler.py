@@ -48,12 +48,7 @@ class BaseHandler(APIView):
     def get_cookie(self, name):
         return self.cookie.get(name)
 
-    def get_argument(self, arg_name, default_value=None):
-        return self.GET.get(arg_name, default_value)
-
-    def initial(self, request, *args, **kwargs):
-        super().initial(request, *args, **kwargs)
-
+    def _set_request_params(self, request):
         if hasattr(request, 'data'):
             self.data = request.data
         else:
@@ -62,6 +57,14 @@ class BaseHandler(APIView):
             self.GET = request.GET
 
         self.cookie = request.COOKIES
+
+    def get_argument(self, arg_name, default_value=None):
+        return self.GET.get(arg_name, default_value)
+
+    def initial(self, request, *args, **kwargs):
+        super(BaseHandler, self).initial(request, *args, **kwargs)
+
+        self._set_request_params(request)
 
         client_token = self.get_cookie('eva_token')
 

@@ -1,4 +1,4 @@
-from eva_plugin.dashboards.db import DatabaseConnector
+from eva_plugin.dashs.db import DatabaseConnector
 
 db = DatabaseConnector()
 
