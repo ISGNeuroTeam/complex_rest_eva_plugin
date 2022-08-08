@@ -1,5 +1,4 @@
 from .base_loader import BaseLoader
-import os
 import pandas as pd
 from pandas import DataFrame as PandasDataFrame
 from typing import Dict, Optional

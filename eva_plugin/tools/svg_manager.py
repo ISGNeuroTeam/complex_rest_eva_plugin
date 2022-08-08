@@ -1,5 +1,5 @@
 import os
-from tools.name_resolver import FileNameResolver
+from .name_resolver import FileNameResolver
 
 
 class SVGManager:

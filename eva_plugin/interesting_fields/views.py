@@ -1,16 +1,16 @@
-import json
-from typing import Dict
+import uuid
+import logging
 
-from rest_framework.response import Response
-from rest_framework.views import APIView
 
-from eva_plugin.base_handler import BaseHandler
+from rest.views import APIView
+from rest.response import Response, status
+
 from eva_plugin.tools.interesting_fields_builder import InterestingFieldsBuilder
-from eva_plugin.tools.interesting_fields_loader import InterestingFieldsLoader, BaseLoaderError
+from eva_plugin.tools.interesting_fields_loader import InterestingFieldsLoader
 from eva_plugin.settings import MEM_CONF, STATIC_CONF
 
 
-class GetInterestingFields(APIView):
+class InterestingFieldsView(APIView):
     """
     Returns a list of dictionaries where every dictionary represents interesting fields for one column of data
 
@@ -24,34 +24,29 @@ class GetInterestingFields(APIView):
             :%: percent of count from all rows in the data table
     """
 
-    def __init__(self):
-        super(GetInterestingFields, self).__init__()
+    http_method_names = ['get']
+    handler_id = str(uuid.uuid4())
+    logger = logging.getLogger('eva_plugin.interesting_fields')
 
+    def __init__(self):
+        super().__init__()
         self.builder = InterestingFieldsBuilder()
         self.loader = InterestingFieldsLoader(MEM_CONF, STATIC_CONF)
 
     def get(self, request):
-        params = self.request.query_arguments
-        cid = params.get('cid')[0].decode()
-        from_time = params.get('from')
-        to_time = params.get('to')
-        if from_time:
-            from_time = from_time[0].decode()
-            if not from_time.isdigit():
-                return Response({'status': 'failed', 'error': f'from: {from_time} not a number'},
-                                             default=str)
-            from_time = int(from_time)
-        if to_time:
-            to_time = to_time[0].decode()
-            if not to_time.isdigit():
-                return Response(json.dumps({'status': 'failed', 'error': f'to: {to_time} not a number'},
-                                             default=str))
-            to_time = int(to_time)
+        cid = dict(request.GET).get('cid')
+        if not cid:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        cid = cid[0]
         try:
-            data = self.loader.load_data(cid, from_time, to_time)
+            data = self.loader.load_data(cid)
             interesting_fields = self.builder.get_interesting_fields(data)
-        except BaseLoaderError as e:
-            return Response(json.dumps({'status': 'failed', 'error': e}, default=str))
         except Exception as e:
-            return Response(json.dumps({'status': 'failed', 'error': f'{e} cid {cid}'}, default=str))
-        return Response(json.dumps(interesting_fields))
+            return Response(
+                {'status': 'failed', 'error': f'{e} cid {cid}'},
+                status.HTTP_400_BAD_REQUEST
+            )
+        return Response(
+            interesting_fields,
+            status.HTTP_200_OK
+        )
