@@ -1,19 +1,12 @@
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from typing import List, Dict
-
-
-class TimeIntervals:
-    MINUTES = 0
-    HOURS = 1
-    DAYS = 2
-    MONTHS = 3
+from typing import List, Dict, Optional, Union
 
 
 class TimelinesBuilder:
     """
     The builder class is responsible for creating  a list of 4 timelines.
-    One object is a pair (time, value) and represents a time interval.
+    Every timeline has 50 objects. One object is a pair (time, value) and represents a time interval.
     :time: - unix timestamp
     :value: - how many events happened during the time interval
 
@@ -24,102 +17,99 @@ class TimelinesBuilder:
     4th - 1 month
     """
 
-    MINUTES_IN_SECONDS = 60
-    HOURS_IN_SECONDS = 3600
-    DAYS_IN_SECONDS = 86400
-
     def __init__(self):
-        self.intervals = {  # intervals for every timeline
-            TimeIntervals.MINUTES: relativedelta(minutes=1),
-            TimeIntervals.HOURS: relativedelta(hours=1),
-            TimeIntervals.DAYS: relativedelta(days=1),
-            TimeIntervals.MONTHS: relativedelta(months=1)
-        }
+        self.INTERVALS = {'m': 60, 'h': 3600, 'd': 86400, 'M': -1}  # -1 is a signal for getter to count month interval
+        self._interval_info = None
+        self._last_time = None
+        self.points = 50  # how many points on the timeline
+        # approximately self.point months in seconds to optimize (limit) json reading
+        self.BIGGEST_INTERVAL = self.INTERVALS['d'] * 31 * self.points
 
-    def get_all_timelines(self, data: List[int]) -> List[List[Dict[str, int]]]:
+    def _round_timestamp(self, last_time: datetime, interval: int) -> datetime:
         """
-        You can use get_<interval>_timeline one by one, but it will be around for times longer
-        This method is optimized
+        >>> tlb = TimelinesBuilder()
+        >>> dt = datetime(2007, 12, 31, 4, 19, 37)
+        >>> tlb._round_timestamp(dt, tlb.INTERVALS['m'])
+        datetime.datetime(2007, 12, 31, 4, 19)
+        >>> tlb._round_timestamp(dt, tlb.INTERVALS['h'])
+        datetime.datetime(2007, 12, 31, 4, 0)
+        >>> tlb._round_timestamp(dt, tlb.INTERVALS['d'])
+        datetime.datetime(2007, 12, 31, 0, 0)
+        >>> tlb._round_timestamp(dt, tlb.INTERVALS['M'])
+        datetime.datetime(2007, 12, 1, 0, 0)
         """
+        if interval == self.INTERVALS['m']:
+            last_time = last_time.replace(second=0, microsecond=0)
+        elif interval == self.INTERVALS['h']:
+            last_time = last_time.replace(minute=0, second=0, microsecond=0)
+        elif interval == self.INTERVALS['d']:
+            last_time = last_time.replace(hour=0, minute=0, second=0, microsecond=0)
+        else:
+            last_time = last_time.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        return last_time
 
-        timelines = [[], [], [], []]
+    @property
+    def interval(self) -> relativedelta:
+        if self._interval_info == self.INTERVALS['m']:
+            return relativedelta(minutes=1)
+        if self._interval_info == self.INTERVALS['h']:
+            return relativedelta(hours=1)
+        if self._interval_info == self.INTERVALS['d']:
+            return relativedelta(days=1)
+        return relativedelta(months=1)
 
-        sorted_data = sorted(data)
-
-        left_border = datetime.fromtimestamp(sorted_data[0])
-        left_border_minutes = left_border.replace(second=0)
-        left_border_hours = left_border_minutes.replace(minute=0)
-        left_border_days = left_border_hours.replace(hour=0)
-        left_border_months = left_border_days.replace(day=1)
-        right_border_minutes = left_border_minutes + self.intervals[TimeIntervals.MINUTES]
-        right_border_hours = left_border_hours + self.intervals[TimeIntervals.HOURS]
-        right_border_days = left_border_days + self.intervals[TimeIntervals.DAYS]
-        right_border_months = left_border_months + self.intervals[TimeIntervals.MONTHS]
-
-        for elem in sorted_data:
-            elem_date = datetime.fromtimestamp(elem)
-            right_border_minutes = self._add_element(right_border_minutes,
-                                                     timelines[TimeIntervals.MINUTES],
-                                                     elem_date,
-                                                     TimeIntervals.MINUTES)
-            right_border_hours = self._add_element(right_border_hours,
-                                                   timelines[TimeIntervals.HOURS],
-                                                   elem_date,
-                                                   TimeIntervals.HOURS)
-            right_border_days = self._add_element(right_border_days,
-                                                  timelines[TimeIntervals.DAYS],
-                                                  elem_date,
-                                                  TimeIntervals.DAYS)
-            right_border_months = self._add_element(right_border_months,
-                                                    timelines[TimeIntervals.MONTHS],
-                                                    elem_date,
-                                                    TimeIntervals.MONTHS)
-
-        return timelines
-
-    def _add_element(self, right_border: datetime, timeline: List[Dict[str, int]], elem_date: datetime, interval: int) \
-            -> datetime:
-        """Adds element to timeline and returns next right border"""
-        if not timeline:
-            timeline.append({'time': (right_border - self.intervals[interval]).timestamp(), 'value': 1})
-            return right_border
-        if elem_date < right_border:
-            timeline[-1]['value'] += 1
-            return right_border
-        timeline.append({'time': right_border.timestamp(), 'value': 1})
-        if interval is TimeIntervals.MINUTES:
-            return elem_date.replace(second=0) + self.intervals[interval]
-        if interval is TimeIntervals.HOURS:
-            return elem_date.replace(minute=0, second=0) + self.intervals[interval]
-        if interval is TimeIntervals.DAYS:
-            return elem_date.replace(hour=0, minute=0, second=0) + self.intervals[interval]
-        return elem_date.replace(day=1, hour=0, minute=0, second=0) + self.intervals[interval]
-
-    def _get_one_timeline(self, data: List[int], left_border: datetime, interval: int) -> List[Dict[str, int]]:
-        sorted_data = sorted(data)
+    def get_timeline(self, data: List[Dict], interval: int, field: Optional[str] = None) \
+            -> List[Dict[str, Union[int, float]]]:
+        """
+        When field is specified field value is accumulated for given interval rather than amount of events
+        """
         timeline = []
-        right_border = left_border + self.intervals[interval]
+        # select interval
+        if not data:
+            raise Exception('Empty data')
+        self._interval_info = interval
+        self._last_time = datetime.fromtimestamp(data[0]['_time'])
+        self._last_time = self._round_timestamp(self._last_time, self._interval_info)
+        accumulated_value = 0
+        i = 0
+        while i < len(data) and len(timeline) < self.points:
+            # accumulate values for given interval
+            if datetime.fromtimestamp(data[i]['_time']) >= self._last_time:
+                if field:
+                    accumulated_value += data[i][field]
+                else:
+                    accumulated_value += 1
+                i += 1
+            # flush accumulated values and interval to the timeline
+            elif self._last_time - self.interval <= datetime.fromtimestamp(data[i]['_time']) < self._last_time:
+                timeline.append({'time': self._last_time.timestamp(), 'value': accumulated_value})
+                accumulated_value = 0
+                self._last_time -= self.interval
+            # move to interval in which current time is located and set 0 values to intervals on the way
+            else:
+                if accumulated_value:
+                    timeline.append({'time': self._last_time.timestamp(), 'value': accumulated_value})
+                    accumulated_value = 0
+                while datetime.fromtimestamp(data[i]['_time']) < self._last_time - self.interval \
+                        and len(timeline) < self.points:
+                    timeline.append({'time': self._last_time.timestamp(), 'value': 0})
+                    self._last_time -= self.interval
+        if accumulated_value:
+            timeline.append({'time': self._last_time.timestamp(), 'value': accumulated_value})
+            self._last_time -= self.interval
+        # when data ended but timeline does not have 50 values
+        while len(timeline) < self.points:
+            timeline.append({'time': self._last_time.timestamp(), 'value': 0})
+            self._last_time -= self.interval
+        return list(reversed(timeline))
 
-        for elem in sorted_data:
-            elem_date = datetime.fromtimestamp(elem)
-            right_border = self._add_element(right_border,
-                                             timeline,
-                                             elem_date,
-                                             interval)
-        return timeline
-
-    def get_minutes_timeline(self, data: List[int]) -> List[Dict[str, int]]:
-        left_border = datetime.fromtimestamp(min(data)).replace(second=0)
-        return self._get_one_timeline(data, left_border, TimeIntervals.MINUTES)
-
-    def get_hours_timeline(self, data: List[int]) -> List[Dict[str, int]]:
-        left_border = datetime.fromtimestamp(min(data)).replace(minute=0, second=0)
-        return self._get_one_timeline(data, left_border, TimeIntervals.HOURS)
-
-    def get_days_timeline(self, data: List[int]) -> List[Dict[str, int]]:
-        left_border = datetime.fromtimestamp(min(data)).replace(hour=0, minute=0, second=0)
-        return self._get_one_timeline(data, left_border, TimeIntervals.DAYS)
-
-    def get_months_timeline(self, data: List[int]) -> List[Dict[str, int]]:
-        left_border = datetime.fromtimestamp(min(data)).replace(day=1, hour=0, minute=0, second=0)
-        return self._get_one_timeline(data, left_border, TimeIntervals.MONTHS)
+    def get_all_timelines(self, data: List[Dict], field: Optional[str] = None) \
+            -> List[List[Dict[str, Union[int, float]]]]:
+        """
+        When field is specified field value is accumulated for given interval rather than amount of events
+        """
+        timelines = [self.get_timeline(data, self.INTERVALS['m'], field),
+                     self.get_timeline(data, self.INTERVALS['h'], field),
+                     self.get_timeline(data, self.INTERVALS['d'], field),
+                     self.get_timeline(data, self.INTERVALS['M'], field)]
+        return timelines

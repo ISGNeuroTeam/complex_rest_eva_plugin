@@ -1,12 +1,8 @@
 import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generator, Optional
+from typing import Any, Dict, Generator
 from pathlib import Path
-
-
-class BaseLoaderError(Exception):
-    pass
 
 
 class BaseLoader(ABC):
@@ -30,12 +26,12 @@ class BaseLoader(ABC):
         self.logger.debug(f'Path to cache {path_to_cache_dir}.')
         if not os.path.exists(path_to_cache_dir):
             self.logger.error(f'No cache with id={cid}')
-            raise BaseLoaderError(f'No cache with id={cid}')
-
+            raise Exception(f'No cache with id={cid}')
         return Path(path_to_cache_dir).glob('*.json')
 
     @abstractmethod
-    def load_data(self, cid: str, from_time: Optional[int] = None, to_time: Optional[int] = None) -> Any:
+    def load_data(self, cid: str) -> Any:
         """Implement data loading"""
         raise NotImplementedError
+
 
