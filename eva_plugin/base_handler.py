@@ -19,6 +19,7 @@ class RestUser:
     def __str__(self):
         return f'user name={self.name} with ID={self.id}'
 
+
 class BaseHandler(APIView):
 
     def __init__(self, *args, **kwargs):
@@ -37,7 +38,6 @@ class BaseHandler(APIView):
         self.GET = None
         self.cookie = None
         self.current_user = None
-
 
     def decode_token(self, token):
         return jwt.decode(token, SECRET_KEY, algorithms='HS256')
@@ -74,7 +74,7 @@ class BaseHandler(APIView):
                 token_data = self.decode_token(client_token)
                 user_id = token_data['user_id']
                 user_name = token_data['username']
-                self.request.user = RestUser(name=user_name, _id=user_id)
+                # self.request.user = RestUser(name=user_name, _id=user_id)
                 self.permissions = db.get_permissions_data(user_id=user_id, names_only=True)
             except (jwt.ExpiredSignatureError, jwt.DecodeError):
                 pass
