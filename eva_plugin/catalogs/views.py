@@ -1,7 +1,7 @@
 from eva_plugin.base_handler import BaseHandler
 from eva_plugin.catalogs.db import db
 from rest_framework.response import Response
-from rest_framework.exceptions import ParseError, APIException,
+from rest_framework.exceptions import ParseError, APIException
 
 
 class CatalogsListHandler(BaseHandler):
