@@ -306,3 +306,24 @@ class GroupImportHandler(BaseHandler):
                                      body=dash_data.read().decode(),
                                      groups=[group_name])
         return Response({'status': 'success'})
+
+
+class UserDashboardsHandler(BaseHandler):
+    def get(self, request):
+        if 'admin_all' in self.permissions:
+            return Response({'data': dash_db.get_dashs_data(names_only=True)})
+
+        names_only = self.get_argument('names_only', None)
+
+        dashs = list()
+        user_groups = dash_db.get_groups_data(user_id=self.current_user)
+
+        for group in user_groups:
+            user_dashs = dash_db.get_dashs_data(group_id=group['id'], names_only=names_only)
+            dashs.extend(user_dashs)
+
+        if names_only:
+            dashs = list(set(dashs))
+        else:
+            dashs = list({v['id']: v for v in dashs}.values())
+        return Response({'data': dashs})

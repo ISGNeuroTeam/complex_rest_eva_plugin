@@ -99,3 +99,13 @@ class GroupDashboardsHandler(BaseHandler):
         return Response({'data': group_dashs})
 
 
+class UserGroupsHandler(BaseHandler):
+    def get(self, request):
+        kwargs = {}
+
+        if 'read_groups' not in self.permissions and 'admin_all' not in self.permissions:
+            kwargs['user_id'] = self.current_user
+
+        kwargs['names_only'] = self.get_argument('names_only', None)
+        user_groups = db.get_groups_data(**kwargs)
+        return Response({'data': user_groups})

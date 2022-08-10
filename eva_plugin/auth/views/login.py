@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from eva_plugin.base_handler import BaseHandler
 
-from .db import db
+from eva_plugin.auth.db import db
 
 
 logger = logging.getLogger('eva_plugin')

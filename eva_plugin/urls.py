@@ -1,6 +1,6 @@
 from django.urls import re_path
 
-from eva_plugin.auth.views.login import AuthLoginHandler
+from eva_plugin.auth.urls import urlpatterns as auth_urlpatterns
 from eva_plugin.dashs.urls import urlpatterns as dash_urlpatterns
 from eva_plugin.groups.urls import urlpatterns as group_urlpatterns
 from eva_plugin.catalogs.urls import urlpatterns as catalog_urlpatterns
@@ -15,10 +15,10 @@ from eva_plugin.svg.views import SvgLoadHandler
 
 
 urlpatterns = [
-    re_path(r'^auth/login/?$', AuthLoginHandler.as_view()),
     re_path(r'^getinterestingfields/?$', InterestingFieldsView.as_view()),
     re_path(r'^gettimelines/?$', TimelinesView.as_view()),
     re_path(r'^logs/save/?$', LogsHandler.as_view()),
     re_path(r'^load/svg/?$', SvgLoadHandler.as_view()),
 
-] + dash_urlpatterns + group_urlpatterns + catalog_urlpatterns + theme_urlpatterns + index_urlpatterns
+] + auth_urlpatterns + dash_urlpatterns + group_urlpatterns + catalog_urlpatterns + theme_urlpatterns\
+              + index_urlpatterns
