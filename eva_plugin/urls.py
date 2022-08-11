@@ -6,7 +6,7 @@ from eva_plugin.groups.urls import urlpatterns as group_urlpatterns
 from eva_plugin.catalogs.urls import urlpatterns as catalog_urlpatterns
 from eva_plugin.themes.urls import urlpatterns as theme_urlpatterns
 from eva_plugin.indexes.urls import urlpatterns as index_urlpatterns
-
+from eva_plugin.papers.urls import urlpatterns as paper_urlpatterns
 
 from eva_plugin.interesting_fields.views import InterestingFieldsView
 from eva_plugin.timelines.views import TimelinesView
@@ -21,4 +21,4 @@ urlpatterns = [
     re_path(r'^load/svg/?$', SvgLoadHandler.as_view()),
 
 ] + auth_urlpatterns + dash_urlpatterns + group_urlpatterns + catalog_urlpatterns + theme_urlpatterns\
-              + index_urlpatterns
+              + index_urlpatterns + paper_urlpatterns
