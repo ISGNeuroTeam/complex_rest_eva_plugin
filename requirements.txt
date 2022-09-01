@@ -14,3 +14,4 @@ preview-generator==0.14
 regex==2021.4.4
 python-dateutil==2.8.2
 pandas==1.1.5
+file-read-backwards==2.0.0

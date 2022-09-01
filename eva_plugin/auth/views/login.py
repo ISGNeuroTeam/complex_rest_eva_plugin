@@ -38,7 +38,6 @@ class AuthLoginHandler(BaseHandler):
         super(BaseHandler, self).initial(request, *args, **kwargs)
         self._set_request_params(request)
 
-
     def post(self, request):
         user = db.check_user_exists(self.data.get("username"))
         if not user:

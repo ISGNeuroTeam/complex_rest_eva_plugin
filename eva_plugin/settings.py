@@ -48,5 +48,5 @@ ini_config = merge_ini_config_with_defaults(config, default_ini_config)
 STATIC_CONF = ini_config['static']
 MEM_CONF = ini_config['mem_conf']
 LOGS_PATH = ini_config['general'].get('logs_path', '.')
-FILE_UPLOADER_CONF = ini_config['file_upload_conf']
+FILE_UPLOADER_CONF = ini_config['file_upload']
 
