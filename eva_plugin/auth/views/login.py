@@ -6,7 +6,6 @@ import bcrypt
 from rest_framework.exceptions import ValidationError, AuthenticationFailed
 from rest_framework.response import Response
 
-
 from eva_plugin.base_handler import BaseHandler
 
 from eva_plugin.auth.db import db
@@ -16,6 +15,7 @@ logger = logging.getLogger('eva_plugin')
 
 
 class AuthLoginHandler(BaseHandler):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
@@ -44,8 +44,8 @@ class AuthLoginHandler(BaseHandler):
             raise ValidationError("incorrect login")
 
         password_equal = bcrypt.checkpw(
-            self.data.get("password"),
-            user.password,
+            self.data.get("password").encode('utf8'),
+            user.password.encode('utf8'),
         )
         if not password_equal:
             raise ValidationError(400, "incorrect password")
@@ -58,10 +58,10 @@ class AuthLoginHandler(BaseHandler):
         if not client_token:
             payload = {'user_id': user.id, 'username': user.name, '_uuid': str(uuid.uuid4()),
                        'exp': int((datetime.now() + timedelta(hours=12)).timestamp())}
-            token = self.generate_token(payload)
+            token = self.generate_token(payload).decode('utf-8')  # must be string!
             expired_date = datetime.now() + timedelta(hours=12)
             db.add_session(
-                token=token.decode('utf-8'),
+                token=token,
                 user_id=user.id,
                 expired_date=expired_date
             )

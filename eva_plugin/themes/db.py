@@ -1,7 +1,15 @@
+import logging
+
 from eva_plugin.pg_connector import  PGConnector, flat_to_list, flat_to_set, row_to_obj, QueryError
 
 
+logger = logging.getLogger('eva_plugin')
+
+
 class DatabaseConnector:
+
+    logger = logger
+
     def __init__(self):
         self.pg = PGConnector()
 

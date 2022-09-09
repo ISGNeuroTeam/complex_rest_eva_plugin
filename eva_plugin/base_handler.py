@@ -2,6 +2,8 @@ import logging
 import uuid
 import jwt
 
+from rest.permissions import AllowAny
+
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotAuthenticated
 
@@ -21,6 +23,8 @@ class RestUser:
 
 
 class BaseHandler(APIView):
+
+    permission_classes = (AllowAny,)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

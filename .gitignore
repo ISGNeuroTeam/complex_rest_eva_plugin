@@ -1,5 +1,5 @@
 # Conf
-**.conf
+eva_plugin/**.conf
 
 # Django #
 *.log

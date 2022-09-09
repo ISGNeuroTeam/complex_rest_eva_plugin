@@ -86,7 +86,6 @@ class PGConnector(metaclass=Singleton):
             conn.reset()
             self.pool.putconn(conn)
 
-
     def execute_query(self, query, conn=None, params=None, with_commit=False,
                       with_fetch=True, as_obj=False, fetchall=False):
         fetch_result = None
@@ -114,11 +113,11 @@ class PGConnector(metaclass=Singleton):
                 if fetchall:
                     fetch_result = cur.fetchall()
                     if as_obj:
-                        fetch_result = [self.row_to_obj(row, cur) for row in fetch_result]
+                        fetch_result = [row_to_obj(row, cur) for row in fetch_result]
                 else:
                     fetch_result = cur.fetchone()
                     if as_obj and fetch_result:
-                        fetch_result = self.row_to_obj(fetch_result, cur)
+                        fetch_result = row_to_obj(fetch_result, cur)
             if with_commit:
                 conn.commit()
         except psycopg2.OperationalError as err:
